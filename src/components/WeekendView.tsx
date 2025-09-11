@@ -1,48 +1,78 @@
 import React, { useState, useEffect } from "react";
+import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { ResizableSidebar } from "@/components/ui/resizable-sidebar";
 import {
   Calendar,
   Plus,
   Save,
   Share,
   Settings,
-  ArrowLeft,
-  ArrowRight,
+  X,
+  Search,
+  Filter,
+  Sparkles,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
-import { ActivityBrowser } from "./activities/ActivityBrowser";
 import { ScheduleGrid } from "./schedule/ScheduleGrid";
 import { ThemeToggle } from "./theme-toggle";
 import { WeatherWidget } from "./WeatherWidget";
+import { DragOverlay as CustomDragOverlay } from "./dnd/DragOverlay";
+import { ActivityBrowser } from "./activities/ActivityBrowser";
 import { useActivityStore } from "../stores/activityStore";
 import { useScheduleStore } from "../stores/scheduleStore";
 import { useUserStore } from "../stores/userStore";
-import { useWeatherStore } from "../stores/weatherStore";
-import type { Activity, TimeSlot } from "../types";
-
-type ViewMode = "browse" | "schedule";
+import type {
+  Activity,
+  TimeSlot,
+  ActivityCategory,
+  FilterState,
+} from "../types";
 
 export const WeekendView: React.FC = () => {
-  const [viewMode, setViewMode] = useState<ViewMode>("browse");
   const [weekendTitle, setWeekendTitle] = useState("");
   const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [activeActivity, setActiveActivity] = useState<Activity | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Open by default
+  const [sidebarWidth, setSidebarWidth] = useState(320); // Track sidebar width
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filters, setFilters] = useState<FilterState>({
+    categories: [],
+    moods: [],
+    energyLevels: [],
+    duration: { min: 0, max: 480 },
+    weatherDependent: undefined,
+    tags: [],
+  });
+  const [activeDay, setActiveDay] = useState<"saturday" | "sunday">("saturday");
+
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor)
+  );
 
   // Activity store
   const {
     activities,
     categories,
-    filters,
-    searchTerm,
-    selectedActivity,
     loading: activitiesLoading,
     error: activitiesError,
     loadActivities,
     loadCategories,
-    setSearchTerm,
-    setFilters,
-    selectActivity,
   } = useActivityStore();
 
   // Schedule store
@@ -78,15 +108,8 @@ export const WeekendView: React.FC = () => {
     }
   }, [currentWeekend, weekendTitle]);
 
-  const handleActivitySelect = (activity: Activity) => {
-    selectActivity(activity);
-    // Auto-switch to schedule view when an activity is selected
-    setViewMode("schedule");
-  };
-
   const handleActivityAdd = (activity: Activity, timeSlot: TimeSlot) => {
     addActivity(activity, timeSlot);
-    selectActivity(null); // Clear selection after adding
   };
 
   const handleActivityRemove = (activityId: string) => {
@@ -136,9 +159,94 @@ export const WeekendView: React.FC = () => {
     return `${mins}m`;
   };
 
+  // Drag and drop handlers
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    if (active.data.current?.type === "activity") {
+      setActiveActivity(active.data.current.activity);
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveActivity(null);
+
+    if (!over || !active.data.current?.activity) return;
+
+    const activity = active.data.current.activity as Activity;
+    const overData = over.data.current;
+
+    if (overData?.type === "timeSlot") {
+      const { day, period } = overData;
+
+      // Create a time slot for this drop
+      const timeSlot: TimeSlot = {
+        id: `${day}-${period}`,
+        day,
+        startTime:
+          period === "morning"
+            ? "08:00"
+            : period === "afternoon"
+            ? "12:00"
+            : period === "evening"
+            ? "17:00"
+            : "22:00",
+        endTime:
+          period === "morning"
+            ? "12:00"
+            : period === "afternoon"
+            ? "17:00"
+            : period === "evening"
+            ? "22:00"
+            : "24:00",
+        period,
+      };
+
+      handleActivityAdd(activity, timeSlot);
+    }
+  };
+
+  // Quick add activity function
+  const handleQuickAdd = (activity: Activity, day: "saturday" | "sunday") => {
+    // Find the first available time slot for the day
+    const dayActivities = currentWeekend?.[day] || [];
+    const periods = ["morning", "afternoon", "evening", "night"] as const;
+
+    for (const period of periods) {
+      const hasActivity = dayActivities.some(
+        (sa) => sa.timeSlot.period === period
+      );
+      if (!hasActivity) {
+        const timeSlot: TimeSlot = {
+          id: `${day}-${period}`,
+          day,
+          startTime:
+            period === "morning"
+              ? "08:00"
+              : period === "afternoon"
+              ? "12:00"
+              : period === "evening"
+              ? "17:00"
+              : "22:00",
+          endTime:
+            period === "morning"
+              ? "12:00"
+              : period === "afternoon"
+              ? "17:00"
+              : period === "evening"
+              ? "22:00"
+              : "24:00",
+          period,
+        };
+        handleActivityAdd(activity, timeSlot);
+        return;
+      }
+    }
+  };
+
   if (activitiesLoading || scheduleLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">
@@ -168,178 +276,297 @@ export const WeekendView: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-6 h-6 text-primary" />
-                <span className="text-xl font-bold">Weekendly</span>
-              </div>
-
-              {currentTheme && (
-                <Badge
-                  variant="secondary"
-                  style={{
-                    backgroundColor: `${currentTheme.color}20`,
-                    color: currentTheme.color,
-                  }}
-                >
-                  {currentTheme.name}
-                </Badge>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              {/* View Mode Toggle */}
-              <div className="flex bg-muted rounded-lg p-2 gap-x-2">
-                <Button
-                  variant={viewMode === "browse" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setViewMode("browse")}
-                  className="text-xs"
-                >
-                  Browse Activities
-                </Button>
-                <Button
-                  variant={viewMode === "schedule" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setViewMode("schedule")}
-                  className="text-xs"
-                >
-                  My Schedule
-                </Button>
-              </div>
-
-              {/* Action Buttons */}
-              <Button variant="outline" size="sm">
-                <Save className="w-4 h-4 mr-1" />
-                Save
-              </Button>
-              <Button variant="outline" size="sm">
-                <Share className="w-4 h-4 mr-1" />
-                Share
-              </Button>
-              <Button variant="outline" size="sm">
-                <Settings className="w-4 h-4" />
-              </Button>
-              <ThemeToggle />
-            </div>
-          </div>
-
-          {/* Weekend Title */}
-          <div className="mt-4">
-            {isEditingTitle ? (
-              <div className="flex items-center gap-2 max-w-md">
-                <Input
-                  value={weekendTitle}
-                  onChange={(e) => setWeekendTitle(e.target.value)}
-                  onBlur={handleTitleSave}
-                  onKeyDown={handleTitleKeyPress}
-                  className="text-lg font-semibold"
-                  autoFocus
-                />
-                <Button size="sm" onClick={handleTitleSave}>
-                  Save
-                </Button>
-              </div>
-            ) : (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
+        {/* Modern Header */}
+        <header className="border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-gray-900/60 sticky top-0 z-50 shadow-sm">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <h1
-                  className="text-2xl font-bold cursor-pointer hover:text-primary transition-colors"
-                  onClick={() => setIsEditingTitle(true)}
-                >
-                  {currentWeekend?.title || "My Weekend Plan"}
-                </h1>
-
-                {currentWeekend && (
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>{getTotalActivities()} activities</span>
-                    <span>{formatDuration(getTotalDuration())} total</span>
-                    {conflicts.length > 0 && (
-                      <Badge variant="destructive" className="text-xs">
-                        {conflicts.length} conflict
-                        {conflicts.length > 1 ? "s" : ""}
-                      </Badge>
-                    )}
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl">
+                    <Calendar className="w-6 h-6 text-white" />
                   </div>
+                  <div>
+                    <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                      Weekendly
+                    </span>
+                    <p className="text-xs text-muted-foreground">
+                      Plan your perfect weekend
+                    </p>
+                  </div>
+                </div>
+
+                {currentTheme && (
+                  <Badge
+                    variant="secondary"
+                    className="hidden sm:flex"
+                    style={{
+                      backgroundColor: `${currentTheme.color}20`,
+                      color: currentTheme.color,
+                    }}
+                  >
+                    <Sparkles className="w-3 h-3 mr-1" />
+                    {currentTheme.name}
+                  </Badge>
                 )}
               </div>
-            )}
-          </div>
-        </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-6">
-        {viewMode === "browse" ? (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Browse Activities</h2>
-              <p className="text-muted-foreground">
-                Drag activities to your schedule or click to select
-              </p>
+              <div className="flex items-center gap-2">
+                {/* Action Buttons */}
+                <Button variant="outline" size="sm" className="hidden md:flex">
+                  <Save className="w-4 h-4 mr-1" />
+                  Save
+                </Button>
+                <Button variant="outline" size="sm" className="hidden md:flex">
+                  <Share className="w-4 h-4 mr-1" />
+                  Share
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Settings className="w-4 h-4" />
+                </Button>
+                <ThemeToggle />
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              {/* Weather Widget Sidebar */}
-              <div className="lg:col-span-1">
-                <WeatherWidget />
-              </div>
+            {/* Weekend Title */}
+            <div className="mt-4">
+              {isEditingTitle ? (
+                <div className="flex items-center gap-2 max-w-md">
+                  <Input
+                    value={weekendTitle}
+                    onChange={(e) => setWeekendTitle(e.target.value)}
+                    onBlur={handleTitleSave}
+                    onKeyDown={handleTitleKeyPress}
+                    className="text-lg font-semibold border-2 focus:border-blue-500"
+                    autoFocus
+                  />
+                  <Button size="sm" onClick={handleTitleSave}>
+                    Save
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                  <h1
+                    className="text-2xl sm:text-3xl font-bold cursor-pointer hover:text-blue-600 transition-colors"
+                    onClick={() => setIsEditingTitle(true)}
+                  >
+                    {currentWeekend?.title || "My Weekend Plan"}
+                  </h1>
 
-              {/* Activity Browser Main Content */}
-              <div className="lg:col-span-3">
-                <ActivityBrowser
-                  activities={activities}
-                  categories={categories}
-                  filters={filters}
-                  searchTerm={searchTerm}
-                  onFilterChange={setFilters}
-                  onSearchChange={setSearchTerm}
-                  onActivitySelect={handleActivitySelect}
+                  {currentWeekend && (
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span>{getTotalActivities()} activities</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span>{formatDuration(getTotalDuration())} total</span>
+                      </div>
+                      {conflicts.length > 0 && (
+                        <Badge variant="destructive" className="text-xs">
+                          {conflicts.length} conflict
+                          {conflicts.length > 1 ? "s" : ""}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </header>
+
+        {/* Sidebar Toggle Arrow - Right Side */}
+        {!isSidebarOpen && (
+          <div className="fixed left-4 top-1/2 transform -translate-y-1/2 z-40">
+            <Button
+              onClick={() => setIsSidebarOpen(true)}
+              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg rounded-full p-2"
+              size="sm"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
+
+        {/* Main Content with Sidebar Layout */}
+        <div className="flex">
+          {/* Activity Sidebar */}
+          <ResizableSidebar
+            isOpen={isSidebarOpen}
+            onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+            onWidthChange={setSidebarWidth}
+            defaultWidth={420}
+            minWidth={320}
+            maxWidth={700}
+          >
+            <div className="p-4 border-b">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Activities</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsSidebarOpen(false)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="px-4 pb-4 h-full overflow-y-auto">
+              <ActivityBrowser
+                activities={activities}
+                categories={categories}
+                filters={filters}
+                searchTerm={searchTerm}
+                onFilterChange={setFilters}
+                onSearchChange={setSearchTerm}
+                onActivitySelect={(activity) =>
+                  console.log("Selected:", activity)
+                }
+              />
+            </div>
+          </ResizableSidebar>
+
+          {/* Main Content */}
+          <main
+            className="flex-1 container mx-auto px-4 py-6 transition-all duration-300"
+            style={{
+              marginLeft: isSidebarOpen ? `${sidebarWidth}px` : "0px",
+            }}
+          >
+            {currentWeekend ? (
+              <div className="space-y-6">
+                {/* Quick Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <Card className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-0 shadow-lg">
+                    <CardContent className="p-4 text-center">
+                      <div className="text-2xl font-bold text-blue-600">
+                        {currentWeekend.saturday.length}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Saturday
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-0 shadow-lg">
+                    <CardContent className="p-4 text-center">
+                      <div className="text-2xl font-bold text-purple-600">
+                        {currentWeekend.sunday.length}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Sunday
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-0 shadow-lg">
+                    <CardContent className="p-4 text-center">
+                      <div className="text-2xl font-bold text-green-600">
+                        {formatDuration(getTotalDuration())}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Total Time
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-0 shadow-lg">
+                    <CardContent className="p-4 text-center">
+                      <div className="text-2xl font-bold text-orange-600">
+                        {conflicts.length}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Conflicts
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Day Tabs */}
+                <div className="flex items-center justify-center">
+                  <div className="flex bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl p-1 shadow-lg">
+                    <Button
+                      variant={activeDay === "saturday" ? "default" : "ghost"}
+                      onClick={() => setActiveDay("saturday")}
+                      className={`px-6 py-2 rounded-lg transition-all ${
+                        activeDay === "saturday"
+                          ? "bg-blue-500 text-white shadow-md"
+                          : "hover:bg-white/50 dark:hover:bg-gray-700/50"
+                      }`}
+                    >
+                      Saturday
+                      <Badge
+                        variant="secondary"
+                        className="ml-2 bg-white/20 text-current"
+                      >
+                        {currentWeekend.saturday.length}
+                      </Badge>
+                    </Button>
+                    <Button
+                      variant={activeDay === "sunday" ? "default" : "ghost"}
+                      onClick={() => setActiveDay("sunday")}
+                      className={`px-6 py-2 rounded-lg transition-all ${
+                        activeDay === "sunday"
+                          ? "bg-purple-500 text-white shadow-md"
+                          : "hover:bg-white/50 dark:hover:bg-gray-700/50"
+                      }`}
+                    >
+                      Sunday
+                      <Badge
+                        variant="secondary"
+                        className="ml-2 bg-white/20 text-current"
+                      >
+                        {currentWeekend.sunday.length}
+                      </Badge>
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Single Day Schedule */}
+                <ScheduleGrid
+                  weekend={currentWeekend}
+                  onActivityAdd={handleActivityAdd}
+                  onActivityRemove={handleActivityRemove}
+                  readOnly={false}
+                  activeDay={activeDay}
                 />
               </div>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Weekend Schedule</h2>
-              <Button variant="outline" onClick={() => setViewMode("browse")}>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Activities
-              </Button>
-            </div>
-
-            {currentWeekend ? (
-              <ScheduleGrid
-                weekend={currentWeekend}
-                onActivityAdd={handleActivityAdd}
-                onActivityRemove={handleActivityRemove}
-                readOnly={false}
-              />
             ) : (
-              <Card>
-                <CardContent className="text-center py-12">
-                  <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <h3 className="text-lg font-semibold mb-2">
-                    No Weekend Plan
+              <Card className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-0 shadow-xl">
+                <CardContent className="text-center py-16">
+                  <div className="p-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                    <Calendar className="w-10 h-10 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-2">
+                    Ready to Plan Your Weekend?
                   </h3>
-                  <p className="text-muted-foreground mb-4">
-                    Create a new weekend plan to get started
+                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                    Create your perfect weekend schedule with activities you
+                    love
                   </p>
-                  <Button onClick={() => createNewWeekend("My Weekend Plan")}>
-                    <Plus className="w-4 h-4 mr-2" />
+                  <Button
+                    onClick={() => createNewWeekend("My Weekend Plan")}
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg"
+                    size="lg"
+                  >
+                    <Plus className="w-5 h-5 mr-2" />
                     Create Weekend Plan
                   </Button>
                 </CardContent>
               </Card>
             )}
-          </div>
-        )}
-      </main>
-    </div>
+          </main>
+        </div>
+
+        {/* Drag Overlay */}
+        <CustomDragOverlay activeActivity={activeActivity} />
+      </div>
+    </DndContext>
   );
 };

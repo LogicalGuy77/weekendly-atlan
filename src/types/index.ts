@@ -180,6 +180,7 @@ export interface ScheduleGridProps {
   onActivityRemove?: (activityId: string) => void;
   onActivityMove?: (activityId: string, newTimeSlot: TimeSlot) => void;
   readOnly?: boolean;
+  activeDay?: WeekendDay;
 }
 
 export interface ActivityBrowserProps {
