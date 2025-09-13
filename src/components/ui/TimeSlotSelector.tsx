@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { X, Clock } from "lucide-react";
 import { getTimePeriodInfo } from "../../lib/timeUtils";
+import { useUserStore } from "../../stores/userStore";
 import type { Activity, WeekendDay, TimePeriod } from "../../types";
 
 interface TimeSlotSelectorProps {
@@ -12,18 +13,6 @@ interface TimeSlotSelectorProps {
   onClose: () => void;
   onSelectTimeSlot: (day: WeekendDay, period: TimePeriod) => void;
 }
-
-const TIME_PERIODS: {
-  period: TimePeriod;
-  label: string;
-  time: string;
-  icon: string;
-}[] = [
-  { period: "morning", ...getTimePeriodInfo("morning") },
-  { period: "afternoon", ...getTimePeriodInfo("afternoon") },
-  { period: "evening", ...getTimePeriodInfo("evening") },
-  { period: "night", ...getTimePeriodInfo("night") },
-];
 
 const DAYS: { day: WeekendDay; label: string; color: string }[] = [
   { day: "saturday", label: "Saturday", color: "bg-blue-500" },
@@ -36,7 +25,31 @@ export const TimeSlotSelector: React.FC<TimeSlotSelectorProps> = ({
   onClose,
   onSelectTimeSlot,
 }) => {
+  const { preferences } = useUserStore();
+
   if (!isOpen) return null;
+
+  // Create TIME_PERIODS dynamically using user preferences
+  const TIME_PERIODS: {
+    period: TimePeriod;
+    label: string;
+    time: string;
+    icon: string;
+  }[] = [
+    {
+      period: "morning",
+      ...getTimePeriodInfo("morning", preferences.timePeriods),
+    },
+    {
+      period: "afternoon",
+      ...getTimePeriodInfo("afternoon", preferences.timePeriods),
+    },
+    {
+      period: "evening",
+      ...getTimePeriodInfo("evening", preferences.timePeriods),
+    },
+    { period: "night", ...getTimePeriodInfo("night", preferences.timePeriods) },
+  ];
 
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60);

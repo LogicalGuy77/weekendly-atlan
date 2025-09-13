@@ -83,36 +83,62 @@ export function formatTo24Hour(time12: string): string {
 /**
  * Gets the display label for a time period with AM/PM formatting
  * @param period - The time period
+ * @param customTimePeriods - Optional custom time periods from user preferences
  * @returns Object with label and formatted time range
  */
-export function getTimePeriodInfo(period: string): {
+export function getTimePeriodInfo(
+  period: string,
+  customTimePeriods?: {
+    morning: { start: string; end: string };
+    afternoon: { start: string; end: string };
+    evening: { start: string; end: string };
+    night: { start: string; end: string };
+  }
+): {
   label: string;
   time: string;
   icon: string;
 } {
+  // Use custom time periods if provided, otherwise use defaults
+  const timePeriods = customTimePeriods || {
+    morning: { start: "08:00", end: "12:00" },
+    afternoon: { start: "12:00", end: "17:00" },
+    evening: { start: "17:00", end: "22:00" },
+    night: { start: "22:00", end: "24:00" },
+  };
+
   switch (period) {
     case "morning":
       return {
         label: "Morning",
-        time: formatTimeRange("08:00", "12:00"),
+        time: formatTimeRange(
+          timePeriods.morning.start,
+          timePeriods.morning.end
+        ),
         icon: "🌅",
       };
     case "afternoon":
       return {
         label: "Afternoon",
-        time: formatTimeRange("12:00", "17:00"),
+        time: formatTimeRange(
+          timePeriods.afternoon.start,
+          timePeriods.afternoon.end
+        ),
         icon: "☀️",
       };
     case "evening":
       return {
         label: "Evening",
-        time: formatTimeRange("17:00", "22:00"),
+        time: formatTimeRange(
+          timePeriods.evening.start,
+          timePeriods.evening.end
+        ),
         icon: "🌆",
       };
     case "night":
       return {
         label: "Night",
-        time: formatTimeRange("22:00", "24:00"),
+        time: formatTimeRange(timePeriods.night.start, timePeriods.night.end),
         icon: "🌙",
       };
     default:

@@ -13,6 +13,13 @@ interface UserStoreActions {
   addFavoriteActivity: (activityId: string) => void;
   removeFavoriteActivity: (activityId: string) => void;
 
+  // Time period management
+  updateTimePeriod: (
+    period: string,
+    startTime: string,
+    endTime: string
+  ) => void;
+
   // Theme management
   setCurrentTheme: (theme: WeekendTheme | null) => void;
   loadAvailableThemes: () => Promise<void>;
@@ -37,6 +44,12 @@ const defaultPreferences: UserPreferences = {
     saturdayEnd: "22:00",
     sundayStart: "09:00",
     sundayEnd: "21:00",
+  },
+  timePeriods: {
+    morning: { start: "08:00", end: "12:00" },
+    afternoon: { start: "12:00", end: "17:00" },
+    evening: { start: "17:00", end: "22:00" },
+    night: { start: "22:00", end: "24:00" },
   },
   notifications: {
     reminders: true,
@@ -86,6 +99,19 @@ export const useUserStore = create<UserStore>()(
             favoriteActivities: preferences.favoriteActivities.filter(
               (id) => id !== activityId
             ),
+          },
+        });
+      },
+
+      updateTimePeriod: (period, startTime, endTime) => {
+        const { preferences } = get();
+        set({
+          preferences: {
+            ...preferences,
+            timePeriods: {
+              ...preferences.timePeriods,
+              [period]: { start: startTime, end: endTime },
+            },
           },
         });
       },

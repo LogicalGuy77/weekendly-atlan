@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useDroppable, useDraggable } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -9,7 +9,9 @@ import { CSS } from "@dnd-kit/utilities";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Plus, X, GripVertical } from "lucide-react";
+import { Clock, Plus, X, GripVertical, Edit } from "lucide-react";
+import { TimePeriodEditor } from "../ui/TimePeriodEditor";
+import { useUserStore } from "../../stores/userStore";
 import type { WeekendDay, TimePeriod, ScheduledActivity } from "../../types";
 
 interface DroppableTimeSlotProps {
@@ -157,6 +159,9 @@ export const DroppableTimeSlot: React.FC<DroppableTimeSlotProps> = ({
   onActivityRemove,
   readOnly = false,
 }) => {
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const { preferences, updateTimePeriod } = useUserStore();
+
   const { isOver, setNodeRef } = useDroppable({
     id: `${day}-${period}`,
     data: {
@@ -179,61 +184,106 @@ export const DroppableTimeSlot: React.FC<DroppableTimeSlotProps> = ({
     return activities.reduce((total, sa) => total + sa.activity.duration, 0);
   };
 
-  return (
-    <Card
-      ref={setNodeRef}
-      className={`min-h-[120px] transition-all duration-200 ${
-        isOver ? "ring-2 ring-primary bg-primary/5" : ""
-      } ${!readOnly ? "hover:bg-muted/50" : ""}`}
-    >
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">{label}</CardTitle>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Clock className="w-4 h-4" />
-            <span>{time}</span>
-          </div>
-        </div>
-        {getTotalDuration() > 0 && (
-          <div className="text-sm text-muted-foreground">
-            Total: {formatDuration(getTotalDuration())}
-          </div>
-        )}
-      </CardHeader>
+  const handleTimeEdit = () => {
+    if (!readOnly) {
+      setIsEditorOpen(true);
+    }
+  };
 
-      <CardContent className="space-y-3">
-        {activities.length === 0 ? (
-          <div
-            className={`text-center py-8 text-muted-foreground transition-all duration-200 ${
-              isOver ? "scale-105" : ""
-            }`}
-          >
-            <Plus className="w-8 h-8 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">
-              {readOnly ? "No activities planned" : "Drop activities here"}
-            </p>
-            {isOver && !readOnly && (
-              <p className="text-xs text-primary mt-1 animate-pulse">
-                Release to add activity
-              </p>
-            )}
+  const handleTimePeriodSave = (
+    period: TimePeriod,
+    startTime: string,
+    endTime: string
+  ) => {
+    updateTimePeriod(period, startTime, endTime);
+  };
+
+  const getCurrentTimePeriod = () => {
+    return preferences.timePeriods[
+      period as keyof typeof preferences.timePeriods
+    ];
+  };
+
+  return (
+    <>
+      <Card
+        ref={setNodeRef}
+        className={`min-h-[120px] transition-all duration-200 group ${
+          isOver ? "ring-2 ring-primary bg-primary/5" : ""
+        } ${!readOnly ? "hover:bg-muted/50" : ""}`}
+      >
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg">{label}</CardTitle>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Clock className="w-4 h-4" />
+              <button
+                onClick={handleTimeEdit}
+                className={`hover:text-primary transition-colors ${
+                  !readOnly ? "cursor-pointer hover:underline" : ""
+                }`}
+                disabled={readOnly}
+                title={readOnly ? "" : "Click to edit time period"}
+              >
+                {time}
+              </button>
+              {!readOnly && (
+                <Edit className="w-3 h-3 opacity-0 group-hover:opacity-50 transition-opacity" />
+              )}
+            </div>
           </div>
-        ) : (
-          <SortableContext
-            items={activities.map((sa) => sa.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            {activities.map((scheduledActivity) => (
-              <SortableScheduledActivity
-                key={scheduledActivity.id}
-                scheduledActivity={scheduledActivity}
-                onActivityRemove={onActivityRemove}
-                readOnly={readOnly}
-              />
-            ))}
-          </SortableContext>
-        )}
-      </CardContent>
-    </Card>
+          {getTotalDuration() > 0 && (
+            <div className="text-sm text-muted-foreground">
+              Total: {formatDuration(getTotalDuration())}
+            </div>
+          )}
+        </CardHeader>
+
+        <CardContent className="space-y-3">
+          {activities.length === 0 ? (
+            <div
+              className={`text-center py-8 text-muted-foreground transition-all duration-200 ${
+                isOver ? "scale-105" : ""
+              }`}
+            >
+              <Plus className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">
+                {readOnly ? "No activities planned" : "Drop activities here"}
+              </p>
+              {isOver && !readOnly && (
+                <p className="text-xs text-primary mt-1 animate-pulse">
+                  Release to add activity
+                </p>
+              )}
+            </div>
+          ) : (
+            <SortableContext
+              items={activities.map((sa) => sa.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {activities.map((scheduledActivity) => (
+                <SortableScheduledActivity
+                  key={scheduledActivity.id}
+                  scheduledActivity={scheduledActivity}
+                  onActivityRemove={onActivityRemove}
+                  readOnly={readOnly}
+                />
+              ))}
+            </SortableContext>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Time Period Editor */}
+      <TimePeriodEditor
+        isOpen={isEditorOpen}
+        onClose={() => setIsEditorOpen(false)}
+        period={period}
+        label={label}
+        currentStartTime={getCurrentTimePeriod().start}
+        currentEndTime={getCurrentTimePeriod().end}
+        onSave={handleTimePeriodSave}
+      />
+    </>
   );
 };

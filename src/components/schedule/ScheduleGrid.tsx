@@ -2,14 +2,8 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DroppableTimeSlot } from "../dnd/DroppableTimeSlot";
 import { getTimePeriodInfo } from "../../lib/timeUtils";
+import { useUserStore } from "../../stores/userStore";
 import type { ScheduleGridProps, WeekendDay, TimePeriod } from "../../types";
-
-const TIME_PERIODS: { period: TimePeriod; label: string; time: string }[] = [
-  { period: "morning", ...getTimePeriodInfo("morning") },
-  { period: "afternoon", ...getTimePeriodInfo("afternoon") },
-  { period: "evening", ...getTimePeriodInfo("evening") },
-  { period: "night", ...getTimePeriodInfo("night") },
-];
 
 const DAYS: { day: WeekendDay; label: string }[] = [
   { day: "saturday", label: "Saturday" },
@@ -25,6 +19,25 @@ export const ScheduleGrid: React.FC<ScheduleGridProps> = ({
   readOnly = false,
   activeDay,
 }) => {
+  const { preferences } = useUserStore();
+
+  // Create TIME_PERIODS dynamically using user preferences
+  const TIME_PERIODS: { period: TimePeriod; label: string; time: string }[] = [
+    {
+      period: "morning",
+      ...getTimePeriodInfo("morning", preferences.timePeriods),
+    },
+    {
+      period: "afternoon",
+      ...getTimePeriodInfo("afternoon", preferences.timePeriods),
+    },
+    {
+      period: "evening",
+      ...getTimePeriodInfo("evening", preferences.timePeriods),
+    },
+    { period: "night", ...getTimePeriodInfo("night", preferences.timePeriods) },
+  ];
+
   const getActivitiesForTimeSlot = (day: WeekendDay, period: TimePeriod) => {
     return weekend[day].filter(
       (scheduledActivity) => scheduledActivity.timeSlot.period === period

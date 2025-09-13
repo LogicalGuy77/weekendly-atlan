@@ -81,6 +81,13 @@ export interface FilterState {
   tags: string[];
 }
 
+export interface TimePeriodSettings {
+  morning: { start: string; end: string };
+  afternoon: { start: string; end: string };
+  evening: { start: string; end: string };
+  night: { start: string; end: string };
+}
+
 export interface UserPreferences {
   favoriteActivities: string[];
   preferredThemes: string[];
@@ -90,6 +97,7 @@ export interface UserPreferences {
     sundayStart: string;
     sundayEnd: string;
   };
+  timePeriods: TimePeriodSettings;
   notifications: {
     reminders: boolean;
     weatherAlerts: boolean;
