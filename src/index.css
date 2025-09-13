@@ -46,7 +46,7 @@
   /* Light Glass Theme */
   --background: oklch(0.99 0.005 90); /* Almost white with subtle warmth */
   --foreground: oklch(0.15 0.02 240); /* Near Black */
-  --card: oklch(0.98 0.01 90 / 0.8); /* Semi-transparent white */
+  --card: oklch(1 0 0 / 0.65); /* More opaque white for better contrast */
   --card-foreground: oklch(0.15 0.02 240);
   --popover: oklch(0.99 0.005 90 / 0.95);
   --popover-foreground: oklch(0.15 0.02 240);
@@ -59,7 +59,7 @@
   --accent: oklch(0.97 0.01 90 / 0.7);
   --accent-foreground: oklch(0.2 0.02 240);
   --destructive: oklch(0.6 0.22 25);
-  --border: oklch(0.9 0.01 90 / 0.3);
+  --border: oklch(0.15 0.02 240 / 0.1); /* Darker border for definition */
   --input: oklch(0.96 0.01 90 / 0.6);
   --ring: oklch(0.65 0.18 35 / 0.4);
 }
@@ -68,8 +68,8 @@
   /* Dark Glass Theme - Modern Apple-inspired */
   --background: oklch(0.08 0.005 240); /* Deep dark with subtle blue tint */
   --foreground: oklch(0.92 0.01 90); /* Soft white */
-  --card: oklch(0.12 0.01 240 / 0.6); /* Glass-like dark cards */
-  --card-foreground: oklch(0.92 0.01 90);
+  --card: oklch(0.15 0.01 240 / 0.5); /* Adjusted for better glass effect */
+  --card-foreground: oklch(0.95 0.01 90);
   --popover: oklch(0.1 0.005 240 / 0.9);
   --popover-foreground: oklch(0.92 0.01 90);
   --primary: oklch(0.7 0.18 35); /* Bright warm orange */
@@ -81,7 +81,7 @@
   --accent: oklch(0.18 0.01 240 / 0.5);
   --accent-foreground: oklch(0.88 0.01 90);
   --destructive: oklch(0.65 0.22 25);
-  --border: oklch(0.2 0.01 240 / 0.2);
+  --border: oklch(0.8 0.01 240 / 0.15); /* Lighter border for definition */
   --input: oklch(0.16 0.01 240 / 0.4);
   --ring: oklch(0.7 0.18 35 / 0.5);
 }
@@ -96,37 +96,105 @@
 }
 
 @layer utilities {
-  /* Glass UI utilities */
+  /* Enhanced Glass UI utilities */
   .glass {
-    @apply backdrop-blur-xl bg-background/80 border-border/20;
+    @apply backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl;
   }
 
   .glass-card {
-    @apply backdrop-blur-lg bg-card/60 border-border/30 shadow-lg;
+    @apply backdrop-blur-lg bg-white/8 border border-white/15 shadow-xl;
   }
 
   .glass-subtle {
-    @apply backdrop-blur-md bg-background/40 border-border/10;
+    @apply backdrop-blur-md bg-white/5 border border-white/10 shadow-lg;
   }
 
   .glass-strong {
-    @apply backdrop-blur-2xl bg-background/90 border-border/40 shadow-xl;
+    @apply backdrop-blur-2xl bg-white/15 border border-white/25 shadow-2xl;
+  }
+
+  /* Time period specific glass effects */
+  .glass-morning {
+    @apply backdrop-blur-xl bg-gradient-to-br from-white/15 via-cyan-50/10 to-sky-50/15 
+           border border-white/25 shadow-2xl ring-1 ring-cyan-200/20;
+  }
+
+  .glass-afternoon {
+    @apply backdrop-blur-xl bg-gradient-to-br from-white/15 via-blue-50/10 to-indigo-50/15 
+           border border-white/25 shadow-2xl ring-1 ring-blue-200/20;
+  }
+
+  .glass-evening {
+    @apply backdrop-blur-xl bg-gradient-to-br from-white/15 via-orange-50/10 to-pink-50/15 
+           border border-white/25 shadow-2xl ring-1 ring-orange-200/20;
+  }
+
+  .glass-night {
+    @apply backdrop-blur-xl bg-gradient-to-br from-white/10 via-slate-50/5 to-gray-50/10 
+           border border-white/20 shadow-2xl ring-1 ring-slate-200/15;
+  }
+
+  /* Activity card glass effects */
+  .glass-activity {
+    @apply backdrop-blur-md bg-white/12 border border-white/20 shadow-lg 
+           hover:bg-white/18 hover:border-white/30 hover:shadow-xl transition-all duration-300;
   }
 
   /* Dark mode glass enhancements */
   .dark .glass {
-    @apply bg-background/70 border-border/30 shadow-2xl;
+    @apply bg-black/20 border-white/10 shadow-2xl ring-1 ring-white/5;
   }
 
   .dark .glass-card {
-    @apply bg-card/40 border-border/20 shadow-2xl;
+    @apply bg-black/15 border-white/8 shadow-xl ring-1 ring-white/5;
   }
 
   .dark .glass-subtle {
-    @apply bg-background/20 border-border/10;
+    @apply bg-black/10 border-white/5 shadow-lg;
   }
 
   .dark .glass-strong {
-    @apply bg-background/80 border-border/50;
+    @apply bg-black/25 border-white/15 shadow-2xl ring-1 ring-white/10;
+  }
+
+  .dark .glass-morning {
+    @apply bg-gradient-to-br from-black/20 via-cyan-950/15 to-sky-950/20 
+           border-cyan-400/15 ring-cyan-400/10;
+  }
+
+  .dark .glass-afternoon {
+    @apply bg-gradient-to-br from-black/20 via-blue-950/15 to-indigo-950/20 
+           border-blue-400/15 ring-blue-400/10;
+  }
+
+  .dark .glass-evening {
+    @apply bg-gradient-to-br from-black/20 via-orange-950/15 to-pink-950/20 
+           border-orange-400/15 ring-orange-400/10;
+  }
+
+  .dark .glass-night {
+    @apply bg-gradient-to-br from-black/25 via-slate-950/20 to-gray-950/25 
+           border-slate-400/10 ring-slate-400/5;
+  }
+
+  .dark .glass-activity {
+    @apply bg-black/15 border-white/15 hover:bg-black/25 hover:border-white/25;
+  }
+
+  /* Floating glass effects */
+  .glass-float {
+    @apply transform-gpu transition-all duration-300 ease-out
+           hover:scale-[1.02] hover:-translate-y-1 hover:shadow-2xl;
+  }
+
+  /* Glow effects for interactive elements */
+  .glass-glow {
+    @apply relative before:absolute before:inset-0 before:rounded-[inherit] 
+           before:bg-gradient-to-r before:from-transparent before:via-white/5 before:to-transparent
+           before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-500;
+  }
+
+  .dark .glass-glow {
+    @apply before:via-white/3;
   }
 }
