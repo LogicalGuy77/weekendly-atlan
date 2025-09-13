@@ -26,12 +26,15 @@ import {
   Sparkles,
   ChevronLeft,
   ChevronRight,
+  Cloud,
 } from "lucide-react";
 import { ScheduleGrid } from "./schedule/ScheduleGrid";
 import { ThemeToggle } from "./theme-toggle";
 import { DragOverlay as CustomDragOverlay } from "./dnd/DragOverlay";
 import { ActivityBrowser } from "./activities/ActivityBrowser";
 import { TimeSlotSelector } from "./ui/TimeSlotSelector";
+import { WeatherSidebar } from "./WeatherSidebar";
+import { WeatherWidget } from "./WeatherWidget";
 import { useActivityStore } from "../stores/activityStore";
 import { useScheduleStore } from "../stores/scheduleStore";
 import { useUserStore } from "../stores/userStore";
@@ -48,7 +51,8 @@ export const WeekendView: React.FC = () => {
   const [weekendTitle, setWeekendTitle] = useState("");
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [activeActivity, setActiveActivity] = useState<Activity | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Closed by default on mobile
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Activities sidebar - Closed by default on mobile
+  const [isWeatherSidebarOpen, setIsWeatherSidebarOpen] = useState(false); // Weather sidebar - Closed by default
   const [isMobile, setIsMobile] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<FilterState>({
@@ -64,7 +68,7 @@ export const WeekendView: React.FC = () => {
     useState<Activity | null>(null);
   const [showTimeSlotSelector, setShowTimeSlotSelector] = useState(false);
   const [mobileActiveTab, setMobileActiveTab] = useState<
-    "schedule" | "activities"
+    "schedule" | "activities" | "weather"
   >("schedule");
 
   // Check if mobile on mount and window resize
@@ -417,6 +421,23 @@ export const WeekendView: React.FC = () => {
                   <Share className="w-4 h-4 mr-1" />
                   Share
                 </Button>
+                {/* Weather Toggle - Desktop Only */}
+                {!isMobile && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setIsWeatherSidebarOpen(!isWeatherSidebarOpen)
+                    }
+                    className={`p-2 ${
+                      isWeatherSidebarOpen
+                        ? "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400"
+                        : ""
+                    }`}
+                  >
+                    <Cloud className="w-4 h-4" />
+                  </Button>
+                )}
                 <Button variant="outline" size="sm" className="p-2">
                   <Settings className="w-4 h-4" />
                 </Button>
@@ -473,12 +494,25 @@ export const WeekendView: React.FC = () => {
           </div>
         </header>
 
-        {/* Sidebar Toggle Arrow - Right Side (Desktop Only) */}
+        {/* Activities Sidebar Toggle Arrow - Left Side (Desktop Only) */}
         {!isSidebarOpen && !isMobile && (
-          <div className="fixed right-4 top-1/2 transform -translate-y-1/2 z-40">
+          <div className="fixed left-4 top-1/2 transform -translate-y-1/2 z-40">
             <Button
               onClick={() => setIsSidebarOpen(true)}
               className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg rounded-full p-2"
+              size="sm"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
+
+        {/* Weather Sidebar Toggle Arrow - Right Side (Desktop Only) */}
+        {!isWeatherSidebarOpen && !isMobile && (
+          <div className="fixed right-4 top-1/2 transform -translate-y-1/2 z-40">
+            <Button
+              onClick={() => setIsWeatherSidebarOpen(true)}
+              className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg rounded-full p-2"
               size="sm"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -531,7 +565,9 @@ export const WeekendView: React.FC = () => {
                 isSidebarOpen && !isMobile ? "container mx-auto" : "w-full"
               }`}
               style={{
-                marginRight: isSidebarOpen && !isMobile ? "420px" : "0px",
+                marginLeft: isSidebarOpen && !isMobile ? "420px" : "0px",
+                marginRight:
+                  isWeatherSidebarOpen && !isMobile ? "420px" : "0px",
               }}
             >
               {currentWeekend ? (
@@ -654,6 +690,12 @@ export const WeekendView: React.FC = () => {
                 </Card>
               )}
             </main>
+
+            {/* Weather Sidebar */}
+            <WeatherSidebar
+              isOpen={isWeatherSidebarOpen}
+              onToggle={() => setIsWeatherSidebarOpen(!isWeatherSidebarOpen)}
+            />
           </div>
         )}
 
@@ -685,6 +727,18 @@ export const WeekendView: React.FC = () => {
               >
                 <Search className="w-4 h-4 mr-2" />
                 Activities
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => setMobileActiveTab("weather")}
+                className={`flex-1 py-4 rounded-none border-b-2 transition-all ${
+                  mobileActiveTab === "weather"
+                    ? "border-blue-500 text-blue-600 bg-blue-50/50"
+                    : "border-transparent hover:bg-gray-100/50"
+                }`}
+              >
+                <Cloud className="w-4 h-4 mr-2" />
+                Weather
               </Button>
             </div>
 
@@ -786,6 +840,12 @@ export const WeekendView: React.FC = () => {
                     onSearchChange={setSearchTerm}
                     onActivitySelect={handleMobileActivitySelect}
                   />
+                </div>
+              )}
+
+              {mobileActiveTab === "weather" && (
+                <div className="h-full p-4">
+                  <WeatherWidget />
                 </div>
               )}
             </div>

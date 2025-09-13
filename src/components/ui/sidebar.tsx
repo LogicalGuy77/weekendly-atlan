@@ -32,6 +32,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return null;
   }
 
+  // Determine if this is a right sidebar based on className
+  const isRightSidebar =
+    className?.includes("right-0") || className?.includes("left-auto");
+
   return (
     <>
       {/* Backdrop for mobile */}
@@ -48,8 +52,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           isMobile
             ? // Mobile: Bottom sheet that slides up from bottom
               "bottom-0 left-0 right-0 rounded-t-2xl border-t max-h-[85vh] min-h-[50vh]"
-            : // Desktop: Right sidebar with dynamic header height
-              "top-[100px] md:top-[120px] right-0 border-l w-[420px] h-[calc(100vh-100px)] md:h-[calc(100vh-120px)]",
+            : // Desktop: Sidebar with dynamic header height
+            isRightSidebar
+            ? "top-[100px] md:top-[120px] right-0 border-l w-[420px] h-[calc(100vh-100px)] md:h-[calc(100vh-120px)]"
+            : "top-[100px] md:top-[120px] left-0 border-r w-[420px] h-[calc(100vh-100px)] md:h-[calc(100vh-120px)]",
           className
         )}
       >
