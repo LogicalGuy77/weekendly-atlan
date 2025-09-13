@@ -32,7 +32,7 @@ export const WeatherSidebar: React.FC<WeatherSidebarProps> = ({
               e.stopPropagation();
               onToggle();
             }}
-            className="hover:bg-destructive hover:text-destructive-foreground rounded-full p-2 h-8 w-8"
+            className="hover:!bg-red-500 hover:!text-white rounded-full p-2 h-8 w-8"
             title="Close Weather Insights"
           >
             <X className="w-4 h-4" />
