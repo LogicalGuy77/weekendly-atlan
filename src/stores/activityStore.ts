@@ -2,12 +2,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { usePersistenceStore } from "./persistenceStore";
 import { cacheActivitiesOffline } from "../lib/serviceWorker";
-import type {
-  Activity,
-  ActivityCategory,
-  ActivityStoreState,
-  FilterState,
-} from "../types";
+import type { Activity, ActivityStoreState, FilterState } from "../types";
 
 interface ActivityStoreActions {
   // Data loading

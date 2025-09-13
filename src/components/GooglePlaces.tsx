@@ -35,10 +35,6 @@ interface Place {
   }>;
 }
 
-interface GooglePlacesResponse {
-  places: Place[];
-}
-
 export const GooglePlaces: React.FC = () => {
   const [places, setPlaces] = useState<Place[]>([]);
   const [loading, setLoading] = useState(false);
@@ -97,26 +93,10 @@ export const GooglePlaces: React.FC = () => {
     setError(null);
 
     try {
-      const apiKey =
-        import.meta.env.VITE_GOOGLE_PLACES_API_KEY ||
-        "AIzaSyBqptSrclxntLGuuIroUIVXA_Saf8057yo";
+      const apiKey = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
       if (!apiKey) {
         throw new Error("Google Places API key not found");
       }
-
-      // Create search query based on category and location
-      const categoryMap: Record<string, string> = {
-        tourist_attraction: "tourist attractions",
-        restaurant: "restaurants",
-        park: "parks",
-        museum: "museums",
-        shopping_mall: "shopping malls",
-        amusement_park: "entertainment venues",
-      };
-
-      const searchQuery = `${categoryMap[category] || category} near ${
-        userLocation.latitude
-      },${userLocation.longitude}`;
 
       // Use Google Places API (Web Service) - the correct endpoint for nearby search
       const radius = 5000; // 5km radius

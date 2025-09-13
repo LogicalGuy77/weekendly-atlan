@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { formatTimeRange } from "../lib/timeUtils";
 import { usePersistenceStore } from "./persistenceStore";
 import type {
   Activity,
@@ -410,16 +409,9 @@ export const useScheduleStore = create<ScheduleStore>()(
         }
 
         const conflicts: Conflict[] = [];
-        const allActivities = [
-          ...currentWeekend.saturday,
-          ...currentWeekend.sunday,
-        ];
 
         // Check for time overlaps within the same day
-        const checkDayConflicts = (
-          activities: ScheduledActivity[],
-          day: WeekendDay
-        ) => {
+        const checkDayConflicts = (activities: ScheduledActivity[]) => {
           for (let i = 0; i < activities.length; i++) {
             for (let j = i + 1; j < activities.length; j++) {
               const activity1 = activities[i];
@@ -439,8 +431,8 @@ export const useScheduleStore = create<ScheduleStore>()(
           }
         };
 
-        checkDayConflicts(currentWeekend.saturday, "saturday");
-        checkDayConflicts(currentWeekend.sunday, "sunday");
+        checkDayConflicts(currentWeekend.saturday);
+        checkDayConflicts(currentWeekend.sunday);
 
         set({ conflicts });
       },

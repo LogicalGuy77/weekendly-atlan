@@ -18,7 +18,6 @@ import {
   Calendar,
   Plus,
   Share,
-  Settings,
   X,
   ChevronLeft,
   ChevronRight,

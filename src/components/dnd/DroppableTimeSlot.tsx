@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -7,11 +7,9 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Plus, X, GripVertical } from "lucide-react";
-import { useUserStore } from "../../stores/userStore";
 import type { WeekendDay, TimePeriod, ScheduledActivity } from "../../types";
 
 interface DroppableTimeSlotProps {

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { X, Clock, Save } from "lucide-react";
-import { formatTo12Hour, formatTo24Hour } from "../../lib/timeUtils";
+import { formatTo12Hour } from "../../lib/timeUtils";
 import type { TimePeriod } from "../../types";
 
 interface TimePeriodEditorProps {

@@ -124,9 +124,7 @@ export const useUserStore = create<UserStore>()(
         set({ loading: true, error: null });
         try {
           // TODO: Replace with actual API call
-          // For now, we'll use mock themes
-          const mockThemes = await import("../data/mockThemes");
-          // Themes will be loaded separately, this is just for loading state
+          // For now, we'll just set loading state
           set({ loading: false });
         } catch (error) {
           set({

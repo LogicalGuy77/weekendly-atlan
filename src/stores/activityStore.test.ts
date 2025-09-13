@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { useActivityStore } from "./activityStore";
-import type { Activity, ActivityCategory } from "../types";
+import type { Activity } from "../types";
 
 // Mock the persistence store
 vi.mock("./persistenceStore", () => ({
@@ -37,14 +37,6 @@ const mockActivity: Activity = {
   weatherDependent: true,
   icon: "🏃‍♂️",
   tags: ["outdoor", "exercise", "morning"],
-};
-
-const mockCategory: ActivityCategory = {
-  id: "fitness",
-  name: "Fitness",
-  icon: "🏃",
-  color: "#10B981",
-  description: "Physical activities",
 };
 
 describe("ActivityStore", () => {

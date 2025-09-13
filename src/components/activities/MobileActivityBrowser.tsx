@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, ChevronDown, Sliders, X, Plus, ArrowLeft } from "lucide-react";
+import { Search, ChevronDown, Sliders, Plus, ArrowLeft } from "lucide-react";
 import { ActivityCard } from "./ActivityCard";
 import type { Activity, ActivityCategory, FilterState } from "../../types";
 

@@ -11,7 +11,6 @@ import {
   Sparkles,
   Palette,
   Square,
-  Smartphone,
   Monitor,
 } from "lucide-react";
 import { imageGenerationService } from "../services/imageGenerationService";

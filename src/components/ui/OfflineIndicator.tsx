@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Wifi, WifiOff, Cloud, CloudOff, RotateCw } from "lucide-react";
+import { WifiOff, Cloud, CloudOff, RotateCw } from "lucide-react";
 import { Badge } from "./badge";
 import { usePersistenceStore } from "../../stores/persistenceStore";
 import {
@@ -21,10 +21,6 @@ export const OfflineIndicator: React.FC<OfflineIndicatorProps> = ({
   useEffect(() => {
     const handleStatusChange = () => {
       setIsOnline(navigator.onLine);
-    };
-
-    const handleSyncStart = () => {
-      setIsSyncing(true);
     };
 
     const handleSyncComplete = () => {

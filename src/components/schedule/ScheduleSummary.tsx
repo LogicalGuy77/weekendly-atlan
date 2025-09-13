@@ -9,7 +9,6 @@ import {
   Zap,
   Heart,
   TrendingUp,
-  Star,
   Activity,
   Sparkles,
 } from "lucide-react";

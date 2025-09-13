@@ -11,11 +11,9 @@ import {
   Sparkles,
   Palette,
   Square,
-  Heart,
   Zap,
   X,
   Coffee,
-  Sun,
   Check,
   Share2,
 } from "lucide-react";
@@ -199,8 +197,6 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   };
 
   const dayActivities = weekend[activeDay];
-  const selectedStyleData =
-    cardStyles.find((s) => s.value === selectedStyle) || cardStyles[0];
 
   if (!isOpen) return null;
 

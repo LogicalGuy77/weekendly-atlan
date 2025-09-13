@@ -1,5 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
-import type { WeekendSchedule, WeekendDay, ScheduledActivity } from "../types";
+import type { WeekendSchedule, WeekendDay } from "../types";
 
 interface ImageGenerationOptions {
   style?: "modern" | "minimalist" | "vibrant" | "elegant" | "playful";
