@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { ScheduleGrid } from "@/components/schedule/ScheduleGrid";
 import { ScheduleSummary } from "@/components/schedule/ScheduleSummary";
+import { ShareModal } from "@/components/ShareModal";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { DragOverlay as CustomDragOverlay } from "@/components/dnd/DragOverlay";
 import { ActivityBrowser } from "@/components/activities/ActivityBrowser";
@@ -69,6 +70,7 @@ export const WeekendView: React.FC = () => {
     useState(false);
   const [showMobileWeatherBrowser, setShowMobileWeatherBrowser] =
     useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [timePeriodEditor, setTimePeriodEditor] = useState<{
     isOpen: boolean;
     period: TimePeriod | null;
@@ -398,7 +400,15 @@ export const WeekendView: React.FC = () => {
                     </Button>
                   </>
                 )}
-                <Button variant="outline" size="sm" className="hidden md:flex">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="hidden md:flex"
+                  onClick={() => setShowShareModal(true)}
+                  disabled={
+                    !currentWeekend || currentWeekend[activeDay].length === 0
+                  }
+                >
                   <Share className="w-4 h-4 mr-1" />
                   Share
                 </Button>
@@ -646,6 +656,16 @@ export const WeekendView: React.FC = () => {
           isOpen={showMobileWeatherBrowser}
           onClose={() => setShowMobileWeatherBrowser(false)}
         />
+
+        {/* ShareModal - Rendered at top level for proper z-index */}
+        {currentWeekend && (
+          <ShareModal
+            isOpen={showShareModal}
+            onClose={() => setShowShareModal(false)}
+            weekend={currentWeekend}
+            activeDay={activeDay}
+          />
+        )}
 
         {/* TimePeriodEditor - Rendered at top level for proper z-index */}
         {timePeriodEditor.period && (
