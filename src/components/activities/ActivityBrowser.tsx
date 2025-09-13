@@ -152,9 +152,9 @@ export const ActivityBrowser: React.FC<ActivityBrowserProps> = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col h-full">
       {/* Search and Filter Header */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 pt-4 flex-shrink-0">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
@@ -191,7 +191,7 @@ export const ActivityBrowser: React.FC<ActivityBrowserProps> = ({
       </div>
 
       {/* Quick Category Filters */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 flex-shrink-0 py-2">
         {categories.slice(0, 4).map((category) => (
           <Button
             key={category.id}
@@ -227,7 +227,7 @@ export const ActivityBrowser: React.FC<ActivityBrowserProps> = ({
 
       {/* Advanced Filter Panel */}
       {showAdvancedFilters && (
-        <Card>
+        <Card className="flex-shrink-0">
           <CardHeader>
             <CardTitle className="text-lg flex items-center justify-between">
               Advanced Filters
@@ -240,7 +240,7 @@ export const ActivityBrowser: React.FC<ActivityBrowserProps> = ({
               </Button>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 max-h-60 overflow-y-auto">
             {/* All Categories */}
             <div>
               <h4 className="font-medium mb-3 flex items-center gap-2">
@@ -345,18 +345,18 @@ export const ActivityBrowser: React.FC<ActivityBrowserProps> = ({
                     <Input
                       type="number"
                       min="0"
-                      max="480"
-                      step="15"
-                      value={filters.duration.min}
+                      max="8"
+                      step="0.5"
+                      value={filters.duration.min / 60}
                       onChange={(e) =>
                         handleDurationChange(
                           "min",
-                          parseInt(e.target.value) || 0
+                          (parseFloat(e.target.value) || 0) * 60
                         )
                       }
                       className="w-20 text-sm"
                     />
-                    <span className="text-xs text-muted-foreground">min</span>
+                    <span className="text-xs text-muted-foreground">hrs</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <label className="text-sm text-muted-foreground">
@@ -365,18 +365,18 @@ export const ActivityBrowser: React.FC<ActivityBrowserProps> = ({
                     <Input
                       type="number"
                       min="0"
-                      max="480"
-                      step="15"
-                      value={filters.duration.max}
+                      max="8"
+                      step="0.5"
+                      value={filters.duration.max / 60}
                       onChange={(e) =>
                         handleDurationChange(
                           "max",
-                          parseInt(e.target.value) || 480
+                          (parseFloat(e.target.value) || 8) * 60
                         )
                       }
                       className="w-20 text-sm"
                     />
-                    <span className="text-xs text-muted-foreground">min</span>
+                    <span className="text-xs text-muted-foreground">hrs</span>
                   </div>
                 </div>
                 <div className="text-xs text-muted-foreground">
@@ -432,7 +432,7 @@ export const ActivityBrowser: React.FC<ActivityBrowserProps> = ({
       )}
 
       {/* Results Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-shrink-0 py-2">
         <h3 className="text-lg font-semibold">
           {filteredActivities.length} Activities
           {searchTerm && ` for "${searchTerm}"`}
@@ -445,16 +445,22 @@ export const ActivityBrowser: React.FC<ActivityBrowserProps> = ({
       </div>
 
       {/* Activities Grid */}
-      <div className="space-y-4">
-        {filteredActivities.map((activity) => (
-          <DraggableActivity
-            key={activity.id}
-            activity={activity}
-            onSelect={onActivitySelect}
-            showDetails={true}
-            compact={false}
-          />
-        ))}
+      <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="space-y-4 pb-20">
+          {filteredActivities.map((activity) => (
+            <DraggableActivity
+              key={activity.id}
+              activity={activity}
+              onSelect={onActivitySelect}
+              onMobileAdd={(activity) => {
+                // For now, just call onActivitySelect - we'll enhance this with a modal later
+                onActivitySelect?.(activity);
+              }}
+              showDetails={true}
+              compact={false}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Empty State */}

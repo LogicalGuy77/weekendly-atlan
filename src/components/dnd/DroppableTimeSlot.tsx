@@ -144,25 +144,25 @@ export const DroppableTimeSlot: React.FC<DroppableTimeSlotProps> = ({
                 </div>
 
                 {!readOnly && (
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex gap-1">
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-6 w-6 p-0"
+                      className="h-8 w-8 p-0 hidden md:flex opacity-0 group-hover:opacity-100 transition-opacity"
                       onClick={() => {
                         // TODO: Implement edit functionality
                         console.log("Edit activity:", scheduledActivity.id);
                       }}
                     >
-                      <Edit3 className="w-3 h-3" />
+                      <Edit3 className="w-4 h-4" />
                     </Button>
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                      className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                       onClick={() => onActivityRemove?.(scheduledActivity.id)}
                     >
-                      <X className="w-3 h-3" />
+                      <X className="w-4 h-4" />
                     </Button>
                   </div>
                 )}

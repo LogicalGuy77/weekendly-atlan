@@ -60,7 +60,7 @@ export const ScheduleGrid: React.FC<ScheduleGridProps> = ({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-3 md:gap-4 md:grid-cols-2">
             {TIME_PERIODS.map(({ period, label: periodLabel, time }) => {
               const activities = getActivitiesForTimeSlot(activeDay, period);
 
