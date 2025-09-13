@@ -37,10 +37,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       )}
       <div
         className={cn(
-          "fixed bg-background/90 backdrop-blur-lg shadow-2xl z-40 overflow-hidden transition-all duration-300 ease-in-out",
+          "fixed bg-background/95 backdrop-blur-lg shadow-2xl overflow-hidden transition-all duration-300 ease-in-out",
           isMobile
-            ? "bottom-0 left-0 right-0 rounded-t-2xl border-t max-h-[85vh] min-h-[50vh]"
-            : `top-[120px] h-[calc(100vh-120px)] border-r w-[420px]`,
+            ? "bottom-0 left-0 right-0 rounded-t-2xl border-t max-h-[85vh] min-h-[50vh] z-50"
+            : `top-[120px] h-[calc(100vh-120px)] border-r w-[420px] z-30`,
           isRightSidebar ? "right-0 border-r-0 border-l" : "left-0",
           className
         )}

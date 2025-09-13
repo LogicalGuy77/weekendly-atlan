@@ -31,6 +31,7 @@ import { ActivityBrowser } from "@/components/activities/ActivityBrowser";
 import { MobileActivityBrowser } from "@/components/activities/MobileActivityBrowser";
 import { MobileWeatherBrowser } from "@/components/weather/MobileWeatherBrowser";
 import { TimeSlotSelector } from "@/components/ui/TimeSlotSelector";
+import { TimePeriodEditor } from "@/components/ui/TimePeriodEditor";
 import { WeatherSidebar } from "@/components/WeatherSidebar";
 import { useActivityStore } from "@/stores/activityStore";
 import { useScheduleStore } from "@/stores/scheduleStore";
@@ -67,6 +68,19 @@ export const WeekendView: React.FC = () => {
     useState(false);
   const [showMobileWeatherBrowser, setShowMobileWeatherBrowser] =
     useState(false);
+  const [timePeriodEditor, setTimePeriodEditor] = useState<{
+    isOpen: boolean;
+    period: TimePeriod | null;
+    label: string;
+    currentStartTime: string;
+    currentEndTime: string;
+  }>({
+    isOpen: false,
+    period: null,
+    label: "",
+    currentStartTime: "",
+    currentEndTime: "",
+  });
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -110,7 +124,7 @@ export const WeekendView: React.FC = () => {
     reorderActivities,
   } = useScheduleStore();
 
-  useUserStore();
+  const { preferences, updateTimePeriod } = useUserStore();
 
   useEffect(() => {
     loadActivities();
@@ -174,6 +188,43 @@ export const WeekendView: React.FC = () => {
       setWeekendTitle(currentWeekend?.title || "");
       setIsEditingTitle(false);
     }
+  };
+
+  const handleTimeEdit = (period: TimePeriod, label: string) => {
+    const currentTimePeriod =
+      preferences.timePeriods[period as keyof typeof preferences.timePeriods];
+    setTimePeriodEditor({
+      isOpen: true,
+      period,
+      label,
+      currentStartTime: currentTimePeriod.start,
+      currentEndTime: currentTimePeriod.end,
+    });
+  };
+
+  const handleTimePeriodSave = (
+    period: TimePeriod,
+    startTime: string,
+    endTime: string
+  ) => {
+    updateTimePeriod(period, startTime, endTime);
+    setTimePeriodEditor({
+      isOpen: false,
+      period: null,
+      label: "",
+      currentStartTime: "",
+      currentEndTime: "",
+    });
+  };
+
+  const handleTimePeriodClose = () => {
+    setTimePeriodEditor({
+      isOpen: false,
+      period: null,
+      label: "",
+      currentStartTime: "",
+      currentEndTime: "",
+    });
   };
 
   const getTotalActivities = () =>
@@ -472,83 +523,87 @@ export const WeekendView: React.FC = () => {
           </Sidebar>
 
           <main
-            className={`flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 ${
-              isSidebarOpen && !isMobile ? "container mx-auto" : "w-full"
-            }`}
-            style={{
-              marginLeft: isSidebarOpen && !isMobile ? "min(420px, 25vw)" : "0",
-              marginRight:
-                isWeatherSidebarOpen && !isMobile ? "min(420px, 25vw)" : "0",
-            }}
+            className={`flex-1 transition-all duration-300 ${
+              isSidebarOpen && !isMobile ? "ml-[420px]" : ""
+            } ${isWeatherSidebarOpen && !isMobile ? "mr-[420px]" : ""}`}
           >
-            {currentWeekend ? (
-              <div className="space-y-6">
-                <div className="flex items-center justify-center">
-                  <div className="flex bg-card/80 dark:bg-card/80 backdrop-blur-sm rounded-xl p-1 shadow-lg w-full max-w-sm">
-                    <Button
-                      onClick={() => setActiveDay("saturday")}
-                      className={`flex-1 transition-all text-base ${
-                        activeDay === "saturday"
-                          ? "bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
-                          : "bg-transparent hover:bg-accent text-foreground"
-                      }`}
-                    >
-                      Saturday
-                      <Badge
-                        variant="secondary"
-                        className="ml-2 bg-background/50 text-current text-xs"
+            <div
+              className={`p-4 md:p-6 ${
+                isSidebarOpen && isWeatherSidebarOpen && !isMobile
+                  ? "lg:p-4 xl:p-6"
+                  : "lg:p-8"
+              }`}
+            >
+              {currentWeekend ? (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-center">
+                    <div className="flex bg-card/80 dark:bg-card/80 backdrop-blur-sm rounded-xl p-1 shadow-lg w-full max-w-sm">
+                      <Button
+                        onClick={() => setActiveDay("saturday")}
+                        className={`flex-1 transition-all text-base ${
+                          activeDay === "saturday"
+                            ? "bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
+                            : "bg-transparent hover:bg-accent text-foreground"
+                        }`}
                       >
-                        {currentWeekend.saturday.length}
-                      </Badge>
-                    </Button>
-                    <Button
-                      onClick={() => setActiveDay("sunday")}
-                      className={`flex-1 transition-all text-base ${
-                        activeDay === "sunday"
-                          ? "bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
-                          : "bg-transparent hover:bg-accent text-foreground"
-                      }`}
-                    >
-                      Sunday
-                      <Badge
-                        variant="secondary"
-                        className="ml-2 bg-background/50 text-current text-xs"
+                        Saturday
+                        <Badge
+                          variant="secondary"
+                          className="ml-2 bg-background/50 text-current text-xs"
+                        >
+                          {currentWeekend.saturday.length}
+                        </Badge>
+                      </Button>
+                      <Button
+                        onClick={() => setActiveDay("sunday")}
+                        className={`flex-1 transition-all text-base ${
+                          activeDay === "sunday"
+                            ? "bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
+                            : "bg-transparent hover:bg-accent text-foreground"
+                        }`}
                       >
-                        {currentWeekend.sunday.length}
-                      </Badge>
-                    </Button>
+                        Sunday
+                        <Badge
+                          variant="secondary"
+                          className="ml-2 bg-background/50 text-current text-xs"
+                        >
+                          {currentWeekend.sunday.length}
+                        </Badge>
+                      </Button>
+                    </div>
                   </div>
+                  <ScheduleGrid
+                    weekend={currentWeekend}
+                    onActivityRemove={handleActivityRemove}
+                    onTimeEdit={handleTimeEdit}
+                    readOnly={false}
+                    activeDay={activeDay}
+                  />
                 </div>
-                <ScheduleGrid
-                  weekend={currentWeekend}
-                  onActivityRemove={handleActivityRemove}
-                  readOnly={false}
-                  activeDay={activeDay}
-                />
-              </div>
-            ) : (
-              <Card className="bg-card/60 backdrop-blur-sm border-0 shadow-xl">
-                <CardContent className="text-center py-16">
-                  <div className="p-4 bg-gradient-to-br from-primary to-orange-500 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
-                    <Calendar className="w-10 h-10 text-primary-foreground" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-2">
-                    Ready to Plan Your Weekend?
-                  </h3>
-                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                    Create your perfect weekend schedule with activities you
-                    love.
-                  </p>
-                  <Button
-                    onClick={() => createNewWeekend("My Weekend Plan")}
-                    size="lg"
-                  >
-                    <Plus className="w-5 h-5 mr-2" />
-                    Create Weekend Plan
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
+              ) : (
+                <Card className="bg-card/60 backdrop-blur-sm border-0 shadow-xl">
+                  <CardContent className="text-center py-16">
+                    <div className="p-4 bg-gradient-to-br from-primary to-orange-500 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                      <Calendar className="w-10 h-10 text-primary-foreground" />
+                    </div>
+                    <h3 className="text-2xl font-bold mb-2">
+                      Ready to Plan Your Weekend?
+                    </h3>
+                    <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                      Create your perfect weekend schedule with activities you
+                      love.
+                    </p>
+                    <Button
+                      onClick={() => createNewWeekend("My Weekend Plan")}
+                      size="lg"
+                    >
+                      <Plus className="w-5 h-5 mr-2" />
+                      Create Weekend Plan
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </main>
 
           {!isMobile && (
@@ -590,6 +645,19 @@ export const WeekendView: React.FC = () => {
           isOpen={showMobileWeatherBrowser}
           onClose={() => setShowMobileWeatherBrowser(false)}
         />
+
+        {/* TimePeriodEditor - Rendered at top level for proper z-index */}
+        {timePeriodEditor.period && (
+          <TimePeriodEditor
+            isOpen={timePeriodEditor.isOpen}
+            onClose={handleTimePeriodClose}
+            period={timePeriodEditor.period}
+            label={timePeriodEditor.label}
+            currentStartTime={timePeriodEditor.currentStartTime}
+            currentEndTime={timePeriodEditor.currentEndTime}
+            onSave={handleTimePeriodSave}
+          />
+        )}
       </div>
     </DndContext>
   );

@@ -23,9 +23,14 @@ const getTimeOfDay = (
   }
 };
 
-export const ScheduleGrid: React.FC<ScheduleGridProps> = ({
+export const ScheduleGrid: React.FC<
+  ScheduleGridProps & {
+    onTimeEdit?: (period: TimePeriod, label: string) => void;
+  }
+> = ({
   weekend,
   onActivityRemove,
+  onTimeEdit,
   readOnly = false,
   activeDay,
 }) => {
@@ -63,7 +68,7 @@ export const ScheduleGrid: React.FC<ScheduleGridProps> = ({
       {activeDay && (
         <div className="space-y-6">
           {/* Clean responsive grid with proper spacing */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 w-full">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4 md:gap-6 w-full">
             {TIME_PERIODS.map(
               ({ period, label: periodLabel, time, icon }, index) => {
                 const activities = getActivitiesForTimeSlot(activeDay, period);
@@ -106,6 +111,7 @@ export const ScheduleGrid: React.FC<ScheduleGridProps> = ({
                         icon={icon}
                         activities={activities}
                         onActivityRemove={onActivityRemove}
+                        onTimeEdit={onTimeEdit}
                         readOnly={readOnly}
                       />
                     </div>

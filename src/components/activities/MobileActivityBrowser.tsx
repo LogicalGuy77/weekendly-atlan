@@ -127,7 +127,7 @@ export const MobileActivityBrowser: React.FC<MobileActivityBrowserProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-background z-50 flex flex-col">
+    <div className="fixed inset-0 bg-background z-[9999] flex flex-col">
       {/* Header */}
       <div className="bg-background/95 backdrop-blur-lg border-b sticky top-0 z-10">
         <div className="flex items-center justify-between p-4">

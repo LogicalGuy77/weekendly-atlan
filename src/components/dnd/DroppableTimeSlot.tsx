@@ -11,7 +11,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Plus, X, GripVertical } from "lucide-react";
-import { TimePeriodEditor } from "../ui/TimePeriodEditor";
 import { useUserStore } from "../../stores/userStore";
 import type { WeekendDay, TimePeriod, ScheduledActivity } from "../../types";
 
@@ -23,6 +22,7 @@ interface DroppableTimeSlotProps {
   icon: string;
   activities: ScheduledActivity[];
   onActivityRemove?: (activityId: string) => void;
+  onTimeEdit?: (period: TimePeriod, label: string) => void;
   readOnly?: boolean;
 }
 
@@ -76,7 +76,7 @@ const SortableScheduledActivity: React.FC<DraggableScheduledActivityProps> = ({
       whileHover={{ scale: 1.02, y: -2 }}
       whileTap={{ scale: 0.98 }}
       className={`group relative glass-activity rounded-2xl transition-all duration-300 glass-float glass-glow
-        ${isDragging ? "opacity-70 z-50 shadow-2xl scale-105 rotate-2" : ""}
+        ${isDragging ? "opacity-70 z-40 shadow-2xl scale-105 rotate-2" : ""}
         ${readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing"}`}
     >
       {/* Gradient border effect */}
@@ -178,30 +178,19 @@ export const DroppableTimeSlot: React.FC<DroppableTimeSlotProps> = ({
   icon,
   activities,
   onActivityRemove,
+  onTimeEdit,
   readOnly = false,
 }) => {
-  const [isEditorOpen, setIsEditorOpen] = useState(false);
-  const { preferences, updateTimePeriod } = useUserStore();
-
   const { isOver, setNodeRef } = useDroppable({
     id: `${day}-${period}`,
     data: { type: "timeSlot", day, period },
   });
 
   const handleTimeEdit = () => {
-    if (!readOnly) setIsEditorOpen(true);
+    if (!readOnly && onTimeEdit) {
+      onTimeEdit(period, label);
+    }
   };
-
-  const handleTimePeriodSave = (
-    p: TimePeriod,
-    startTime: string,
-    endTime: string
-  ) => {
-    updateTimePeriod(p, startTime, endTime);
-  };
-
-  const getCurrentTimePeriod = () =>
-    preferences.timePeriods[period as keyof typeof preferences.timePeriods];
 
   const getGlassClass = () => {
     switch (period) {
@@ -363,16 +352,6 @@ export const DroppableTimeSlot: React.FC<DroppableTimeSlotProps> = ({
         {/* Subtle gradient overlay for depth */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-white/5 pointer-events-none rounded-3xl" />
       </motion.div>
-
-      <TimePeriodEditor
-        isOpen={isEditorOpen}
-        onClose={() => setIsEditorOpen(false)}
-        period={period}
-        label={label}
-        currentStartTime={getCurrentTimePeriod().start}
-        currentEndTime={getCurrentTimePeriod().end}
-        onSave={handleTimePeriodSave}
-      />
     </>
   );
 };
