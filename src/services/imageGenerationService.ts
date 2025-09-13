@@ -43,7 +43,6 @@ class ImageGenerationService {
   ): ScheduleImageData {
     const dayActivities = weekend[activeDay];
 
-    // Calculate statistics (similar to ScheduleSummary component)
     const totalDuration = dayActivities.reduce(
       (total, sa) => total + sa.activity.duration,
       0
@@ -56,13 +55,11 @@ class ImageGenerationService {
       return `${mins}m`;
     };
 
-    // Energy distribution
     const energyLevels = dayActivities.reduce((acc, sa) => {
       acc[sa.activity.energyLevel] = (acc[sa.activity.energyLevel] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
-    // Mood distribution
     const moodCounts = dayActivities.reduce((acc, sa) => {
       sa.activity.mood.forEach((mood) => {
         acc[mood] = (acc[mood] || 0) + 1;
@@ -70,7 +67,6 @@ class ImageGenerationService {
       return acc;
     }, {} as Record<string, number>);
 
-    // Calculate vibe score
     const calculateVibeScore = () => {
       let score = 50;
       const hasLow = energyLevels.low > 0;
@@ -94,21 +90,21 @@ class ImageGenerationService {
 
     const vibeScore = calculateVibeScore();
 
-    // Top moods
     const dominantMoods = Object.entries(moodCounts)
       .sort(([, a], [, b]) => b - a)
       .slice(0, 3)
       .map(([mood]) => mood);
 
-    // Schedule health insights
     const scheduleHealth: string[] = [];
-    if (totalDuration < 240) scheduleHealth.push("Light schedule");
-    if (totalDuration > 600) scheduleHealth.push("Packed schedule");
+    if (totalDuration < 240)
+      scheduleHealth.push("A light and relaxed schedule.");
+    if (totalDuration > 600)
+      scheduleHealth.push("A packed and exciting schedule!");
     if (Object.keys(energyLevels).length === 1)
-      scheduleHealth.push("Single energy level");
+      scheduleHealth.push("Consistent energy all day.");
     if (Object.keys(moodCounts).length >= 4)
-      scheduleHealth.push("Great mood variety");
-    if (vibeScore >= 80) scheduleHealth.push("Amazing day planned");
+      scheduleHealth.push("A great variety of moods.");
+    if (vibeScore >= 80) scheduleHealth.push("An amazing day is planned!");
 
     return {
       weekend,
@@ -125,7 +121,7 @@ class ImageGenerationService {
   }
 
   /**
-   * Generate comprehensive system prompt for image generation
+   * Generate a more imaginative and less structured system prompt.
    */
   private generateSystemPrompt(
     data: ScheduleImageData,
@@ -137,15 +133,12 @@ class ImageGenerationService {
       vibeScore,
       totalActivities,
       totalDuration,
-      energyTypes,
-      moodTypes,
       dominantMoods,
       energyDistribution,
       scheduleHealth,
     } = data;
     const dayActivities = weekend[activeDay];
 
-    // Get vibe emoji and description (matching ScheduleSummary.tsx)
     const getVibeEmoji = (score: number) => {
       if (score >= 90) return "🔥";
       if (score >= 80) return "✨";
@@ -161,152 +154,80 @@ class ImageGenerationService {
       if (score >= 80) return "Fantastic Energy!";
       if (score >= 70) return "Great Balance!";
       if (score >= 60) return "Good Vibes!";
-      if (score >= 50) return "Decent Plan";
-      if (score >= 40) return "Could Use More Fun";
-      return "Needs More Energy";
+      if (score >= 50) return "A Solid Plan";
+      if (score >= 40) return "A Chill Day";
+      return "Relaxation Mode";
     };
 
-    // Detailed activity breakdown with time slots
-    const activityBreakdown = dayActivities
-      .map((sa) => {
-        const timeSlot = `${sa.timeSlot.period} (${sa.timeSlot.startTime}-${sa.timeSlot.endTime})`;
-        return `• ${sa.activity.title} - ${timeSlot} - ${
-          sa.activity.duration
-        }min - ${sa.activity.category.name} - ${
-          sa.activity.energyLevel
-        } energy - Moods: ${sa.activity.mood.join(", ")}`;
-      })
+    const activityHighlights = dayActivities
+      .slice(0, 5) // Showcase up to 5 key activities
+      .map((sa) => `• ${sa.activity.title} (${sa.timeSlot.period})`)
       .join("\n");
 
-    // Category distribution with colors
-    const categoryCount = dayActivities.reduce((acc, sa) => {
-      const catName = sa.activity.category.name;
-      acc[catName] = (acc[catName] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    const categoryBreakdown = Object.entries(categoryCount)
-      .sort(([, a], [, b]) => b - a)
-      .map(([cat, count]) => `${cat}: ${count} activities`)
-      .join(", ");
-
-    // Time period analysis
-    const timePeriods = dayActivities.reduce((acc, sa) => {
-      acc[sa.timeSlot.period] = (acc[sa.timeSlot.period] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    const timeAnalysis = Object.entries(timePeriods)
-      .map(
-        ([period, count]) =>
-          `${period.charAt(0).toUpperCase() + period.slice(1)}: ${count}`
-      )
-      .join(" | ");
-
-    // Energy level breakdown
-    const energyBreakdown = Object.entries(energyDistribution)
-      .map(
-        ([level, count]) =>
-          `${level.charAt(0).toUpperCase() + level.slice(1)}: ${count}`
-      )
-      .join(" | ");
-
-    // Style-specific design instructions
     const styleInstructions = {
       elegant:
-        "Use sophisticated purple and pink gradients, elegant serif fonts, refined layouts with plenty of white space, subtle shadows, and premium feel",
+        "Incorporate sophisticated gradients (think deep purples, golds), elegant serif fonts, and a refined layout with plenty of clean space. The feel should be premium and classy.",
       vibrant:
-        "Use bright, energetic colors like orange, red, and yellow, bold sans-serif fonts, dynamic layouts with geometric shapes and patterns",
+        "Use bright, energetic colors like electric orange, magenta, and turquoise. Employ bold, dynamic typography and geometric patterns to create a sense of excitement and motion.",
       minimalist:
-        "Use clean lines, minimal color palette (grays, whites, one accent color), simple typography, lots of white space, geometric shapes",
+        "Focus on a clean, uncluttered design. Use a muted color palette with one strong accent color. Typography should be simple and legible. White space is your best friend.",
       modern:
-        "Use contemporary blue and cyan gradients, modern sans-serif fonts, sleek layouts with subtle animations feel, tech-inspired elements",
+        "Think sleek and tech-inspired. Use cool gradients (blues, cyans), clean sans-serif fonts, and a structured, grid-based layout. Subtle UI elements or icons can add a modern touch.",
       playful:
-        "Use warm amber and orange colors, friendly rounded fonts, cozy layouts with soft edges, coffee/home-inspired elements, comfortable feel",
+        "Embrace warmth and fun. Use rounded shapes, friendly fonts, and a warm color palette (ambers, oranges, soft yellows). Illustrations or cute icons can enhance the playful feel.",
     };
 
-    const prompt = `Create a stunning, professional social media card for a weekend schedule that's perfect for sharing. Make it visually striking and Instagram-ready!
+    const prompt = `
+      **Your Role:** You are a world-class graphic designer and brand strategist, specializing in creating stunning, shareable social media content. Your task is to design a beautiful and imaginative visual card that captures the essence of a planned weekend. Don't just list data; tell a story.
 
-**WEEKEND SCHEDULE OVERVIEW:**
-📅 Day: ${activeDay.charAt(0).toUpperCase() + activeDay.slice(1)}
-🎯 Plan: "${weekend.title}"
-${getVibeEmoji(vibeScore)} Vibe Score: ${vibeScore}/100 - ${getVibeDescription(
+      **The Creative Brief:**
+      Design a visually striking social media card for a planned ${activeDay}. The plan is titled "${
+      weekend.title
+    }". The overall goal is to create something that feels exciting, personal, and highly shareable.
+
+      **The Weekend's Story & Vibe:**
+      - **The Vibe Score is ${vibeScore}/100.** This is the main feeling of the day. The card's design should reflect this score: ${getVibeDescription(
       vibeScore
-    )}
+    )} ${getVibeEmoji(vibeScore)}
+      - The dominant moods are **${dominantMoods.join(
+        ", "
+      )}**. Weave these feelings into the visual theme.
+      - It's a day with **${totalActivities} activities** planned, lasting for a total of **${totalDuration}**.
+      - The energy flows from ${Object.keys(energyDistribution).join(" to ")}.
+      - A key insight about the plan: "${
+        scheduleHealth[0] || "A well-balanced day."
+      }"
 
-**KEY STATISTICS (Display prominently):**
-📊 ${totalActivities} Activities Planned
-⏰ ${totalDuration} Total Duration
-⚡ ${energyTypes} Energy Types: ${energyBreakdown}
-💫 ${moodTypes} Different Moods: ${dominantMoods.slice(0, 3).join(", ")}
-🏷️ Categories: ${categoryBreakdown}
-🕐 Time Spread: ${timeAnalysis}
+      **Key Ingredients for Your Design (Incorporate these creatively):**
+      - **The Vibe:** The score (${vibeScore}/100) and its description should be the focal point. Make it big and bold.
+      - **Activity Highlights:**
+        ${activityHighlights}
+        ${
+          dayActivities.length > 5
+            ? `...and ${dayActivities.length - 5} more!`
+            : ""
+        }
+      - **Personal Touch:** ${
+        options.customMessage
+          ? `Include this message: "${options.customMessage}"`
+          : ""
+      }
 
-**DETAILED ACTIVITY SCHEDULE:**
-${activityBreakdown}
-
-**SCHEDULE INSIGHTS:**
-${
-  scheduleHealth.length > 0
-    ? scheduleHealth.join(" • ")
-    : "Well-balanced schedule!"
-}
-
-**VISUAL DESIGN REQUIREMENTS:**
-🎨 Style: ${options.style || "modern"} - ${
+      **Creative Direction:**
+      - **Art Style:** ${options.style || "modern"}. ${
       styleInstructions[options.style || "modern"]
     }
-📱 Format: ${options.format || "square"} - Optimized for social media sharing
-🌈 Color Psychology: Match colors to the vibe score and energy levels
-📝 Typography: Use font hierarchy - large vibe score, medium stats, smaller details
-🎯 Layout: Card-based design with clear sections and visual separation
-✨ Visual Elements: Include relevant icons, progress bars for energy distribution, badges for moods
-🔥 Branding: Subtle "Weekendly" branding in corner
-📐 Composition: Use rule of thirds, balanced layout, good contrast ratios
+      - **Format:** Optimized for a social media ${
+        options.format || "post"
+      } (e.g., square or story format).
+      - **Color & Typography:** Let the "Vibe Score" and dominant moods inspire your color palette and font choices. High energy might mean bright colors and bold fonts; a relaxed vibe might mean softer tones and elegant scripts.
+      - **Layout:** You have complete creative freedom. You could try a timeline, a collage, an abstract representation, or a card-based layout. Surprise us! The goal is visual delight, not a boring list.
+      - **Branding:** Please include a small, subtle "Weekendly" logo or wordmark in a corner.
 
-**SPECIFIC VISUAL ELEMENTS TO INCLUDE:**
-1. HERO SECTION: Large vibe score ${getVibeEmoji(
-      vibeScore
-    )} ${vibeScore}/100 with "${getVibeDescription(vibeScore)}"
-2. STATS GRID: 2x2 or 1x4 grid showing activities, duration, energy types, moods
-3. ACTIVITY TIMELINE: Visual representation of the day's schedule by time periods
-4. ENERGY BARS: Progress bars or visual indicators for low/medium/high energy distribution
-5. MOOD BADGES: Colorful tags or badges for dominant moods
-6. CATEGORY ICONS: Visual icons representing different activity categories
-7. TIME INDICATORS: Morning/afternoon/evening/night sections with activities
-8. BACKGROUND: Subtle gradient or pattern that doesn't interfere with readability
+      **Final Goal:** Create an image that someone would be genuinely excited to share with their friends. It should be aspirational, beautiful, and capture the unique personality of this weekend plan. Go beyond a simple data summary and create a piece of art.
+    `;
 
-**MOOD & ATMOSPHERE:**
-- Energy Level: ${Object.keys(energyDistribution).join(" + ")} energy activities
-- Emotional Tone: ${dominantMoods.join(", ")} vibes
-- Overall Feel: ${
-      vibeScore >= 80
-        ? "Exciting and energetic"
-        : vibeScore >= 60
-        ? "Balanced and positive"
-        : vibeScore >= 40
-        ? "Calm and steady"
-        : "Relaxed and peaceful"
-    }
-
-${
-  options.customMessage
-    ? `**PERSONAL MESSAGE:** "${options.customMessage}"`
-    : ""
-}
-
-**FINAL REQUIREMENTS:**
-- Make it share-worthy and Instagram-ready
-- Ensure all text is readable on mobile devices
-- Use high contrast for accessibility
-- Include visual hierarchy to guide the eye
-- Make the vibe score the focal point
-- Ensure the design reflects the energy and mood of the planned activities
-- Create something people would be proud to share with friends!
-
-Generate a beautiful, professional image that captures the excitement and planning that went into this ${activeDay} schedule!`;
-
-    return prompt;
+    return prompt.trim().replace(/\s+/g, " ");
   }
 
   /**
@@ -325,29 +246,18 @@ Generate a beautiful, professional image that captures the excitement and planni
 
       const response = await this.ai.models.generateContent({
         model: "gemini-2.5-flash-image-preview",
-        contents: prompt,
+        contents: [{ parts: [{ text: prompt }] }],
       });
 
-      if (
-        !response.candidates ||
-        !response.candidates[0] ||
-        !response.candidates[0].content
-      ) {
-        throw new Error("Invalid response from Gemini API");
-      }
+      const part = response?.candidates?.[0]?.content?.parts?.find(
+        (p) => p.inlineData
+      );
 
-      const parts = response.candidates[0].content.parts;
-      if (!parts) {
-        throw new Error("No content parts in response");
-      }
-
-      for (const part of parts) {
-        if (part.inlineData && part.inlineData.data) {
-          return {
-            imageData: part.inlineData.data,
-            prompt,
-          };
-        }
+      if (part && part.inlineData?.data) {
+        return {
+          imageData: part.inlineData.data,
+          prompt,
+        };
       }
 
       throw new Error("No image data received from Gemini API");
@@ -370,7 +280,6 @@ Generate a beautiful, professional image that captures the excitement and planni
 
       // In browser environment, create download link
       if (typeof window !== "undefined") {
-        // Convert base64 to blob directly in browser
         const byteCharacters = atob(imageData);
         const byteNumbers = new Array(byteCharacters.length);
         for (let i = 0; i < byteCharacters.length; i++) {
