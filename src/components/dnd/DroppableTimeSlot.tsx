@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useDroppable, useDraggable } from "@dnd-kit/core";
+import React, { useState } from "react";
+import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
   useSortable,
@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Plus, X, GripVertical, Edit } from "lucide-react";
+import { Clock, Plus, X, GripVertical } from "lucide-react";
 import { TimePeriodEditor } from "../ui/TimePeriodEditor";
 import { useUserStore } from "../../stores/userStore";
 import type { WeekendDay, TimePeriod, ScheduledActivity } from "../../types";
@@ -20,6 +20,7 @@ interface DroppableTimeSlotProps {
   period: TimePeriod;
   label: string;
   time: string;
+  icon: string;
   activities: ScheduledActivity[];
   onActivityRemove?: (activityId: string) => void;
   readOnly?: boolean;
@@ -72,80 +73,64 @@ const SortableScheduledActivity: React.FC<DraggableScheduledActivityProps> = ({
       ref={setNodeRef}
       style={style}
       className={`group relative p-3 bg-background border rounded-lg shadow-sm hover:shadow-md transition-all duration-200 ${
-        isDragging ? "opacity-50 z-50" : ""
+        isDragging ? "opacity-50 z-50 shadow-lg scale-105" : ""
       }`}
     >
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <div
-              className="w-3 h-3 rounded-full"
+              className="w-2 h-2 rounded-full flex-shrink-0"
               style={{
                 backgroundColor: scheduledActivity.activity.category.color,
               }}
             />
-            <h4 className="font-medium">{scheduledActivity.activity.title}</h4>
-            {scheduledActivity.completed && (
-              <Badge variant="secondary" className="text-xs">
-                Completed
-              </Badge>
-            )}
+            <h4 className="font-medium truncate">
+              {scheduledActivity.activity.title}
+            </h4>
           </div>
 
-          <p className="text-sm text-muted-foreground mb-2">
-            {scheduledActivity.activity.description}
-          </p>
-
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
               <Clock className="w-3 h-3" />
               <span>{formatDuration(scheduledActivity.activity.duration)}</span>
             </div>
-
             <Badge
               variant="outline"
-              className="text-xs"
+              className="text-xs whitespace-nowrap"
               style={{
                 backgroundColor: `${scheduledActivity.activity.category.color}20`,
+                borderColor: `${scheduledActivity.activity.category.color}50`,
                 color: scheduledActivity.activity.category.color,
               }}
             >
               {scheduledActivity.activity.category.name}
             </Badge>
           </div>
+        </div>
 
-          {scheduledActivity.customNotes && (
-            <div className="mt-2 p-2 bg-muted rounded text-sm">
-              <strong>Notes:</strong> {scheduledActivity.customNotes}
+        {!readOnly && (
+          <div className="flex items-center">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={(e) => {
+                e.stopPropagation();
+                onActivityRemove?.(scheduledActivity.id);
+              }}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+            <div
+              className="cursor-grab active:cursor-grabbing p-1 text-muted-foreground/50 hover:text-muted-foreground"
+              {...listeners}
+              {...attributes}
+            >
+              <GripVertical className="w-4 h-4" />
             </div>
-          )}
-        </div>
-
-        <div className="flex items-center gap-1">
-          {!readOnly && (
-            <>
-              <div
-                className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded"
-                {...listeners}
-                {...attributes}
-              >
-                <GripVertical className="w-4 h-4 text-muted-foreground" />
-              </div>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  onActivityRemove?.(scheduledActivity.id);
-                }}
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -156,6 +141,7 @@ export const DroppableTimeSlot: React.FC<DroppableTimeSlotProps> = ({
   period,
   label,
   time,
+  icon,
   activities,
   onActivityRemove,
   readOnly = false,
@@ -165,95 +151,68 @@ export const DroppableTimeSlot: React.FC<DroppableTimeSlotProps> = ({
 
   const { isOver, setNodeRef } = useDroppable({
     id: `${day}-${period}`,
-    data: {
-      type: "timeSlot",
-      day,
-      period,
-    },
+    data: { type: "timeSlot", day, period },
   });
 
-  const formatDuration = (minutes: number) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    if (hours > 0) {
-      return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-    }
-    return `${mins}m`;
-  };
-
-  const getTotalDuration = () => {
-    return activities.reduce((total, sa) => total + sa.activity.duration, 0);
-  };
-
   const handleTimeEdit = () => {
-    if (!readOnly) {
-      setIsEditorOpen(true);
-    }
+    if (!readOnly) setIsEditorOpen(true);
   };
 
   const handleTimePeriodSave = (
-    period: TimePeriod,
+    p: TimePeriod,
     startTime: string,
     endTime: string
   ) => {
-    updateTimePeriod(period, startTime, endTime);
+    updateTimePeriod(p, startTime, endTime);
   };
 
-  const getCurrentTimePeriod = () => {
-    return preferences.timePeriods[
-      period as keyof typeof preferences.timePeriods
-    ];
-  };
+  const getCurrentTimePeriod = () =>
+    preferences.timePeriods[period as keyof typeof preferences.timePeriods];
 
   return (
     <>
       <Card
         ref={setNodeRef}
-        className={`min-h-[120px] transition-all duration-200 group ${
-          isOver ? "ring-2 ring-primary bg-primary/5" : ""
-        } ${!readOnly ? "hover:bg-muted/50" : ""}`}
+        className={`min-h-[200px] flex flex-col transition-all duration-300 group bg-card/50 dark:bg-card/50 border-dashed ${
+          isOver
+            ? "ring-2 ring-primary border-solid bg-primary/10"
+            : "border-border/50"
+        } ${!readOnly ? "hover:border-primary/50" : ""}`}
       >
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">{label}</CardTitle>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Clock className="w-4 h-4" />
-              <button
-                onClick={handleTimeEdit}
-                className={`hover:text-primary transition-colors ${
-                  !readOnly ? "cursor-pointer hover:underline" : ""
-                }`}
-                disabled={readOnly}
-                title={readOnly ? "" : "Click to edit time period"}
-              >
-                {time}
-              </button>
-              {!readOnly && (
-                <Edit className="w-3 h-3 opacity-0 group-hover:opacity-50 transition-opacity" />
-              )}
-            </div>
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <span className="text-xl">{icon}</span>
+              {label}
+            </CardTitle>
+            <button
+              onClick={handleTimeEdit}
+              className={`text-xs text-muted-foreground transition-colors ${
+                !readOnly
+                  ? "cursor-pointer hover:text-primary hover:underline"
+                  : ""
+              }`}
+              disabled={readOnly}
+            >
+              {time}
+            </button>
           </div>
-          {getTotalDuration() > 0 && (
-            <div className="text-sm text-muted-foreground">
-              Total: {formatDuration(getTotalDuration())}
-            </div>
-          )}
         </CardHeader>
 
-        <CardContent className="space-y-3">
+        <CardContent className="flex-1 flex flex-col space-y-3 p-3">
           {activities.length === 0 ? (
             <div
-              className={`text-center py-8 text-muted-foreground transition-all duration-200 ${
+              className={`flex-1 flex flex-col items-center justify-center text-center text-muted-foreground transition-all duration-200 ${
                 isOver ? "scale-105" : ""
               }`}
             >
-              <Plus className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">
-                {readOnly ? "No activities planned" : "Drop activities here"}
+              <Plus className="w-6 h-6 mb-1 opacity-40" />
+              <p className="text-xs">
+                {readOnly ? "No activities" : "Drop an activity"}
               </p>
               {isOver && !readOnly && (
                 <p className="text-xs text-primary mt-1 animate-pulse">
-                  Release to add activity
+                  Release to add
                 </p>
               )}
             </div>
@@ -262,37 +221,29 @@ export const DroppableTimeSlot: React.FC<DroppableTimeSlotProps> = ({
               items={activities.map((sa) => sa.id)}
               strategy={verticalListSortingStrategy}
             >
-              <AnimatePresence mode="popLayout">
-                {activities.map((scheduledActivity, index) => (
+              <AnimatePresence>
+                {activities.map((sa) => (
                   <motion.div
-                    key={scheduledActivity.id}
+                    key={sa.id}
                     layout
-                    initial={{ scale: 0.8, opacity: 0, y: -20 }}
+                    initial={{ scale: 0.8, opacity: 0 }}
                     animate={{
                       scale: 1,
                       opacity: 1,
-                      y: 0,
                       transition: {
                         type: "spring",
-                        stiffness: 500,
+                        stiffness: 350,
                         damping: 30,
-                        mass: 1,
-                        delay: index * 0.1, // Stagger animation
                       },
                     }}
                     exit={{
                       scale: 0.8,
                       opacity: 0,
-                      y: -20,
-                      transition: {
-                        type: "spring",
-                        stiffness: 400,
-                        damping: 25,
-                      },
+                      transition: { duration: 0.15 },
                     }}
                   >
                     <SortableScheduledActivity
-                      scheduledActivity={scheduledActivity}
+                      scheduledActivity={sa}
                       onActivityRemove={onActivityRemove}
                       readOnly={readOnly}
                     />
@@ -304,7 +255,6 @@ export const DroppableTimeSlot: React.FC<DroppableTimeSlotProps> = ({
         </CardContent>
       </Card>
 
-      {/* Time Period Editor */}
       <TimePeriodEditor
         isOpen={isEditorOpen}
         onClose={() => setIsEditorOpen(false)}

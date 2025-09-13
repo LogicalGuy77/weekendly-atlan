@@ -20,10 +20,10 @@ export const WeatherSidebar: React.FC<WeatherSidebarProps> = ({
       className="left-auto right-0 border-l border-r-0"
     >
       <div className="p-4 border-b">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Cloud className="w-5 h-5 text-blue-500" />
-            <h3 className="text-lg font-semibold">Weather</h3>
+            <Cloud className="w-5 h-5 text-primary" />
+            <h3 className="text-lg font-semibold">Weather Insights</h3>
           </div>
           <Button
             variant="ghost"
@@ -32,7 +32,8 @@ export const WeatherSidebar: React.FC<WeatherSidebarProps> = ({
               e.stopPropagation();
               onToggle();
             }}
-            style={{ zIndex: 9999 }}
+            className="hover:bg-destructive hover:text-destructive-foreground rounded-full p-2 h-8 w-8"
+            title="Close Weather Insights"
           >
             <X className="w-4 h-4" />
           </Button>
