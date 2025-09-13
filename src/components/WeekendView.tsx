@@ -268,7 +268,7 @@ export const WeekendView: React.FC = () => {
   // Loading and Error States
   if (activitiesLoading || scheduleLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-beige-50 dark:bg-gray-900">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-blue-950 dark:via-slate-900 dark:to-black">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Crafting your weekend...</p>
@@ -302,7 +302,7 @@ export const WeekendView: React.FC = () => {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="min-h-screen bg-gradient-to-br from-beige-50 via-orange-50 to-amber-50 dark:from-gray-900 dark:to-black">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-blue-950 dark:via-slate-900 dark:to-black">
         <header className="border-b bg-background/80 dark:bg-background/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
           <div className="container mx-auto px-4 py-3">
             <div className="flex items-center justify-between">
