@@ -72,7 +72,7 @@ const SortableScheduledActivity: React.FC<DraggableScheduledActivityProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`group relative p-3 bg-background border rounded-lg shadow-sm hover:shadow-md transition-all duration-200 ${
+      className={`group relative p-3 glass-subtle border rounded-lg hover:glass-card transition-all duration-200 ${
         isDragging ? "opacity-50 z-50 shadow-lg scale-105" : ""
       }`}
     >
@@ -173,11 +173,11 @@ export const DroppableTimeSlot: React.FC<DroppableTimeSlotProps> = ({
     <>
       <Card
         ref={setNodeRef}
-        className={`min-h-[200px] flex flex-col transition-all duration-300 group bg-card/50 dark:bg-card/50 border-dashed ${
+        className={`min-h-[200px] flex flex-col transition-all duration-300 group glass-card border-dashed ${
           isOver
-            ? "ring-2 ring-primary border-solid bg-primary/10"
+            ? "ring-2 ring-primary border-solid bg-primary/10 dark:bg-primary/5"
             : "border-border/50"
-        } ${!readOnly ? "hover:border-primary/50" : ""}`}
+        } ${!readOnly ? "hover:border-primary/50 hover:shadow-xl" : ""}`}
       >
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">

@@ -43,47 +43,47 @@
 
 :root {
   --radius: 0.75rem;
-  /* Orange, Black, Beige Theme - Light */
-  --background: oklch(0.98 0.01 90); /* Soft Beige */
+  /* Light Glass Theme */
+  --background: oklch(0.99 0.005 90); /* Almost white with subtle warmth */
   --foreground: oklch(0.15 0.02 240); /* Near Black */
-  --card: oklch(1 0 0); /* White */
+  --card: oklch(0.98 0.01 90 / 0.8); /* Semi-transparent white */
   --card-foreground: oklch(0.15 0.02 240);
-  --popover: oklch(1 0 0);
+  --popover: oklch(0.99 0.005 90 / 0.95);
   --popover-foreground: oklch(0.15 0.02 240);
-  --primary: oklch(0.7 0.15 45); /* Vibrant Orange */
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.01 90); /* Lighter Beige */
+  --primary: oklch(0.65 0.18 35); /* Warm orange */
+  --primary-foreground: oklch(0.98 0.01 90);
+  --secondary: oklch(0.96 0.01 90 / 0.6); /* Glass-like secondary */
   --secondary-foreground: oklch(0.2 0.02 240);
-  --muted: oklch(0.95 0.01 90);
-  --muted-foreground: oklch(0.5 0.01 240);
-  --accent: oklch(0.97 0.01 90);
+  --muted: oklch(0.95 0.01 90 / 0.5);
+  --muted-foreground: oklch(0.45 0.01 240);
+  --accent: oklch(0.97 0.01 90 / 0.7);
   --accent-foreground: oklch(0.2 0.02 240);
-  --destructive: oklch(0.6 0.22 25); /* Destructive Red */
-  --border: oklch(0.9 0.01 90);
-  --input: oklch(0.9 0.01 90);
-  --ring: oklch(0.7 0.15 45 / 0.6);
+  --destructive: oklch(0.6 0.22 25);
+  --border: oklch(0.9 0.01 90 / 0.3);
+  --input: oklch(0.96 0.01 90 / 0.6);
+  --ring: oklch(0.65 0.18 35 / 0.4);
 }
 
 .dark {
-  /* Orange, Black, Beige Theme - Dark */
-  --background: oklch(0.09 0.01 240); /* Very Dark Gray/Black */
-  --foreground: oklch(0.95 0.01 90); /* Light Beige/White */
-  --card: oklch(0.12 0.01 240);
-  --card-foreground: oklch(0.95 0.01 90);
-  --popover: oklch(0.09 0.01 240);
-  --popover-foreground: oklch(0.95 0.01 90);
-  --primary: oklch(0.7 0.15 45); /* Vibrant Orange */
-  --primary-foreground: oklch(0.1 0.02 240);
-  --secondary: oklch(0.15 0.01 240);
-  --secondary-foreground: oklch(0.95 0.01 90);
-  --muted: oklch(0.15 0.01 240);
-  --muted-foreground: oklch(0.6 0.01 90);
-  --accent: oklch(0.15 0.01 240);
-  --accent-foreground: oklch(0.95 0.01 90);
-  --destructive: oklch(0.7 0.22 25);
-  --border: oklch(0.2 0.01 240);
-  --input: oklch(0.2 0.01 240);
-  --ring: oklch(0.7 0.15 45 / 0.7);
+  /* Dark Glass Theme - Modern Apple-inspired */
+  --background: oklch(0.08 0.005 240); /* Deep dark with subtle blue tint */
+  --foreground: oklch(0.92 0.01 90); /* Soft white */
+  --card: oklch(0.12 0.01 240 / 0.6); /* Glass-like dark cards */
+  --card-foreground: oklch(0.92 0.01 90);
+  --popover: oklch(0.1 0.005 240 / 0.9);
+  --popover-foreground: oklch(0.92 0.01 90);
+  --primary: oklch(0.7 0.18 35); /* Bright warm orange */
+  --primary-foreground: oklch(0.08 0.005 240);
+  --secondary: oklch(0.16 0.01 240 / 0.4); /* Subtle glass secondary */
+  --secondary-foreground: oklch(0.88 0.01 90);
+  --muted: oklch(0.14 0.01 240 / 0.3);
+  --muted-foreground: oklch(0.65 0.01 90);
+  --accent: oklch(0.18 0.01 240 / 0.5);
+  --accent-foreground: oklch(0.88 0.01 90);
+  --destructive: oklch(0.65 0.22 25);
+  --border: oklch(0.2 0.01 240 / 0.2);
+  --input: oklch(0.16 0.01 240 / 0.4);
+  --ring: oklch(0.7 0.18 35 / 0.5);
 }
 
 @layer base {
@@ -92,5 +92,41 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  /* Glass UI utilities */
+  .glass {
+    @apply backdrop-blur-xl bg-background/80 border-border/20;
+  }
+
+  .glass-card {
+    @apply backdrop-blur-lg bg-card/60 border-border/30 shadow-lg;
+  }
+
+  .glass-subtle {
+    @apply backdrop-blur-md bg-background/40 border-border/10;
+  }
+
+  .glass-strong {
+    @apply backdrop-blur-2xl bg-background/90 border-border/40 shadow-xl;
+  }
+
+  /* Dark mode glass enhancements */
+  .dark .glass {
+    @apply bg-background/70 border-border/30 shadow-2xl;
+  }
+
+  .dark .glass-card {
+    @apply bg-card/40 border-border/20 shadow-2xl;
+  }
+
+  .dark .glass-subtle {
+    @apply bg-background/20 border-border/10;
+  }
+
+  .dark .glass-strong {
+    @apply bg-background/80 border-border/50;
   }
 }
