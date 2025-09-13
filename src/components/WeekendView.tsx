@@ -25,6 +25,7 @@ import {
   Cloud,
 } from "lucide-react";
 import { ScheduleGrid } from "@/components/schedule/ScheduleGrid";
+import { ScheduleSummary } from "@/components/schedule/ScheduleSummary";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { DragOverlay as CustomDragOverlay } from "@/components/dnd/DragOverlay";
 import { ActivityBrowser } from "@/components/activities/ActivityBrowser";
@@ -577,6 +578,10 @@ export const WeekendView: React.FC = () => {
                     onActivityRemove={handleActivityRemove}
                     onTimeEdit={handleTimeEdit}
                     readOnly={false}
+                    activeDay={activeDay}
+                  />
+                  <ScheduleSummary
+                    weekend={currentWeekend}
                     activeDay={activeDay}
                   />
                 </div>
