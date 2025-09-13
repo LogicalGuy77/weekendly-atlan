@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { X, Clock } from "lucide-react";
+import { getTimePeriodInfo } from "../../lib/timeUtils";
 import type { Activity, WeekendDay, TimePeriod } from "../../types";
 
 interface TimeSlotSelectorProps {
@@ -18,15 +19,10 @@ const TIME_PERIODS: {
   time: string;
   icon: string;
 }[] = [
-  { period: "morning", label: "Morning", time: "8:00 - 12:00", icon: "🌅" },
-  {
-    period: "afternoon",
-    label: "Afternoon",
-    time: "12:00 - 17:00",
-    icon: "☀️",
-  },
-  { period: "evening", label: "Evening", time: "17:00 - 22:00", icon: "🌆" },
-  { period: "night", label: "Night", time: "22:00 - 24:00", icon: "🌙" },
+  { period: "morning", ...getTimePeriodInfo("morning") },
+  { period: "afternoon", ...getTimePeriodInfo("afternoon") },
+  { period: "evening", ...getTimePeriodInfo("evening") },
+  { period: "night", ...getTimePeriodInfo("night") },
 ];
 
 const DAYS: { day: WeekendDay; label: string; color: string }[] = [

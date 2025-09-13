@@ -179,6 +179,11 @@ export interface ScheduleGridProps {
   onActivityAdd?: (activity: Activity, timeSlot: TimeSlot) => void;
   onActivityRemove?: (activityId: string) => void;
   onActivityMove?: (activityId: string, newTimeSlot: TimeSlot) => void;
+  onActivityReorder?: (
+    day: WeekendDay,
+    period: TimePeriod,
+    activityIds: string[]
+  ) => void;
   readOnly?: boolean;
   activeDay?: WeekendDay;
 }

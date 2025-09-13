@@ -1,13 +1,14 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DroppableTimeSlot } from "../dnd/DroppableTimeSlot";
+import { getTimePeriodInfo } from "../../lib/timeUtils";
 import type { ScheduleGridProps, WeekendDay, TimePeriod } from "../../types";
 
 const TIME_PERIODS: { period: TimePeriod; label: string; time: string }[] = [
-  { period: "morning", label: "Morning", time: "8:00 - 12:00" },
-  { period: "afternoon", label: "Afternoon", time: "12:00 - 17:00" },
-  { period: "evening", label: "Evening", time: "17:00 - 22:00" },
-  { period: "night", label: "Night", time: "22:00 - 24:00" },
+  { period: "morning", ...getTimePeriodInfo("morning") },
+  { period: "afternoon", ...getTimePeriodInfo("afternoon") },
+  { period: "evening", ...getTimePeriodInfo("evening") },
+  { period: "night", ...getTimePeriodInfo("night") },
 ];
 
 const DAYS: { day: WeekendDay; label: string }[] = [
@@ -20,6 +21,7 @@ export const ScheduleGrid: React.FC<ScheduleGridProps> = ({
   onActivityAdd,
   onActivityRemove,
   onActivityMove,
+  onActivityReorder,
   readOnly = false,
   activeDay,
 }) => {

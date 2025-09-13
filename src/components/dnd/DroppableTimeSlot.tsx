@@ -1,9 +1,15 @@
 import React from "react";
-import { useDroppable } from "@dnd-kit/core";
+import { useDroppable, useDraggable } from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Plus, X, Edit3 } from "lucide-react";
+import { Clock, Plus, X, GripVertical } from "lucide-react";
 import type { WeekendDay, TimePeriod, ScheduledActivity } from "../../types";
 
 interface DroppableTimeSlotProps {
@@ -15,6 +21,132 @@ interface DroppableTimeSlotProps {
   onActivityRemove?: (activityId: string) => void;
   readOnly?: boolean;
 }
+
+interface DraggableScheduledActivityProps {
+  scheduledActivity: ScheduledActivity;
+  onActivityRemove?: (activityId: string) => void;
+  readOnly?: boolean;
+}
+
+const SortableScheduledActivity: React.FC<DraggableScheduledActivityProps> = ({
+  scheduledActivity,
+  onActivityRemove,
+  readOnly = false,
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: scheduledActivity.id,
+    data: {
+      type: "scheduledActivity",
+      scheduledActivity,
+      activity: scheduledActivity.activity,
+    },
+    disabled: readOnly,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  const formatDuration = (minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours > 0) {
+      return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+    }
+    return `${mins}m`;
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`group relative p-3 bg-background border rounded-lg shadow-sm hover:shadow-md transition-all duration-200 ${
+        isDragging ? "opacity-50 z-50" : ""
+      }`}
+    >
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <div
+              className="w-3 h-3 rounded-full"
+              style={{
+                backgroundColor: scheduledActivity.activity.category.color,
+              }}
+            />
+            <h4 className="font-medium">{scheduledActivity.activity.title}</h4>
+            {scheduledActivity.completed && (
+              <Badge variant="secondary" className="text-xs">
+                Completed
+              </Badge>
+            )}
+          </div>
+
+          <p className="text-sm text-muted-foreground mb-2">
+            {scheduledActivity.activity.description}
+          </p>
+
+          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              <span>{formatDuration(scheduledActivity.activity.duration)}</span>
+            </div>
+
+            <Badge
+              variant="outline"
+              className="text-xs"
+              style={{
+                backgroundColor: `${scheduledActivity.activity.category.color}20`,
+                color: scheduledActivity.activity.category.color,
+              }}
+            >
+              {scheduledActivity.activity.category.name}
+            </Badge>
+          </div>
+
+          {scheduledActivity.customNotes && (
+            <div className="mt-2 p-2 bg-muted rounded text-sm">
+              <strong>Notes:</strong> {scheduledActivity.customNotes}
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1">
+          {!readOnly && (
+            <>
+              <div
+                className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded"
+                {...listeners}
+                {...attributes}
+              >
+                <GripVertical className="w-4 h-4 text-muted-foreground" />
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  onActivityRemove?.(scheduledActivity.id);
+                }}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export const DroppableTimeSlot: React.FC<DroppableTimeSlotProps> = ({
   day,
@@ -87,88 +219,19 @@ export const DroppableTimeSlot: React.FC<DroppableTimeSlotProps> = ({
             )}
           </div>
         ) : (
-          activities.map((scheduledActivity) => (
-            <div
-              key={scheduledActivity.id}
-              className="group relative p-3 bg-background border rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{
-                        backgroundColor:
-                          scheduledActivity.activity.category.color,
-                      }}
-                    />
-                    <h4 className="font-medium">
-                      {scheduledActivity.activity.title}
-                    </h4>
-                    {scheduledActivity.completed && (
-                      <Badge variant="secondary" className="text-xs">
-                        Completed
-                      </Badge>
-                    )}
-                  </div>
-
-                  <p className="text-sm text-muted-foreground mb-2">
-                    {scheduledActivity.activity.description}
-                  </p>
-
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      <span>
-                        {formatDuration(scheduledActivity.activity.duration)}
-                      </span>
-                    </div>
-
-                    <Badge
-                      variant="outline"
-                      className="text-xs"
-                      style={{
-                        backgroundColor: `${scheduledActivity.activity.category.color}20`,
-                        color: scheduledActivity.activity.category.color,
-                      }}
-                    >
-                      {scheduledActivity.activity.category.name}
-                    </Badge>
-                  </div>
-
-                  {scheduledActivity.customNotes && (
-                    <div className="mt-2 p-2 bg-muted rounded text-sm">
-                      <strong>Notes:</strong> {scheduledActivity.customNotes}
-                    </div>
-                  )}
-                </div>
-
-                {!readOnly && (
-                  <div className="flex gap-1">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 w-8 p-0 hidden md:flex opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => {
-                        // TODO: Implement edit functionality
-                        console.log("Edit activity:", scheduledActivity.id);
-                      }}
-                    >
-                      <Edit3 className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
-                      onClick={() => onActivityRemove?.(scheduledActivity.id)}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))
+          <SortableContext
+            items={activities.map((sa) => sa.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {activities.map((scheduledActivity) => (
+              <SortableScheduledActivity
+                key={scheduledActivity.id}
+                scheduledActivity={scheduledActivity}
+                onActivityRemove={onActivityRemove}
+                readOnly={readOnly}
+              />
+            ))}
+          </SortableContext>
         )}
       </CardContent>
     </Card>

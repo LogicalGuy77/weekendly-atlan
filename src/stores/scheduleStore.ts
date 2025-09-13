@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
+import { formatTimeRange } from "../lib/timeUtils";
 import type {
   Activity,
   TimeSlot,
@@ -21,6 +22,11 @@ interface ScheduleStoreActions {
   addActivity: (activity: Activity, timeSlot: TimeSlot) => void;
   removeActivity: (activityId: string) => void;
   moveActivity: (activityId: string, newTimeSlot: TimeSlot) => void;
+  reorderActivities: (
+    day: WeekendDay,
+    period: TimePeriod,
+    activityIds: string[]
+  ) => void;
   updateActivityNotes: (activityId: string, notes: string) => void;
   toggleActivityCompletion: (activityId: string) => void;
 
@@ -272,6 +278,45 @@ export const useScheduleStore = create<ScheduleStore>()(
           ...currentWeekend,
           saturday: updateActivityInArray(currentWeekend.saturday),
           sunday: updateActivityInArray(currentWeekend.sunday),
+          updatedAt: new Date(),
+        };
+
+        set({ currentWeekend: updatedWeekend });
+      },
+
+      reorderActivities: (day, period, activityIds) => {
+        const { currentWeekend } = get();
+        if (!currentWeekend) return;
+
+        const dayActivities = currentWeekend[day];
+
+        // Get activities for this specific time period
+        const periodActivities = dayActivities.filter(
+          (sa) => sa.timeSlot.period === period
+        );
+
+        // Get activities for other time periods
+        const otherActivities = dayActivities.filter(
+          (sa) => sa.timeSlot.period !== period
+        );
+
+        // Create a map for quick lookup
+        const activityMap = new Map(periodActivities.map((sa) => [sa.id, sa]));
+
+        // Reorder the period activities based on the provided order
+        const reorderedPeriodActivities = activityIds
+          .map((id) => activityMap.get(id))
+          .filter((sa): sa is ScheduledActivity => sa !== undefined);
+
+        // Combine with other activities
+        const updatedDayActivities = [
+          ...otherActivities,
+          ...reorderedPeriodActivities,
+        ];
+
+        const updatedWeekend = {
+          ...currentWeekend,
+          [day]: updatedDayActivities,
           updatedAt: new Date(),
         };
 

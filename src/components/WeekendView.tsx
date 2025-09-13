@@ -8,6 +8,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
 import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,6 +35,7 @@ import { TimeSlotSelector } from "./ui/TimeSlotSelector";
 import { useActivityStore } from "../stores/activityStore";
 import { useScheduleStore } from "../stores/scheduleStore";
 import { useUserStore } from "../stores/userStore";
+import { getTimePeriodInfo } from "../lib/timeUtils";
 import type {
   Activity,
   TimeSlot,
@@ -122,6 +124,7 @@ export const WeekendView: React.FC = () => {
     addActivity,
     removeActivity,
     updateWeekendTitle,
+    reorderActivities,
   } = useScheduleStore();
 
   // User store
@@ -240,7 +243,10 @@ export const WeekendView: React.FC = () => {
   // Drag and drop handlers
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
-    if (active.data.current?.type === "activity") {
+    if (
+      active.data.current?.type === "activity" ||
+      active.data.current?.type === "scheduledActivity"
+    ) {
       setActiveActivity(active.data.current.activity);
     }
   };
@@ -249,10 +255,65 @@ export const WeekendView: React.FC = () => {
     const { active, over } = event;
     setActiveActivity(null);
 
-    if (!over || !active.data.current?.activity) return;
+    if (!over || !currentWeekend) return;
 
-    const activity = active.data.current.activity as Activity;
+    const activeData = active.data.current;
     const overData = over.data.current;
+
+    // Handle sortable reordering within the same time slot
+    if (activeData?.type === "scheduledActivity" && over.id !== active.id) {
+      const activeScheduledActivity = activeData.scheduledActivity;
+      const overScheduledActivity = overData?.scheduledActivity;
+
+      // Check if we're reordering within the same time slot
+      if (
+        overScheduledActivity &&
+        activeScheduledActivity.timeSlot.day ===
+          overScheduledActivity.timeSlot.day &&
+        activeScheduledActivity.timeSlot.period ===
+          overScheduledActivity.timeSlot.period
+      ) {
+        const day = activeScheduledActivity.timeSlot.day;
+        const period = activeScheduledActivity.timeSlot.period;
+
+        // Get all activities for this time slot
+        const dayActivities = currentWeekend[day];
+        const periodActivities = dayActivities.filter(
+          (sa: any) => sa.timeSlot.period === period
+        );
+
+        // Find the indices
+        const activeIndex = periodActivities.findIndex(
+          (sa: any) => sa.id === activeScheduledActivity.id
+        );
+        const overIndex = periodActivities.findIndex(
+          (sa: any) => sa.id === overScheduledActivity.id
+        );
+
+        if (
+          activeIndex !== -1 &&
+          overIndex !== -1 &&
+          activeIndex !== overIndex
+        ) {
+          // Reorder the activities
+          const reorderedActivities = arrayMove(
+            periodActivities,
+            activeIndex,
+            overIndex
+          );
+          const activityIds = reorderedActivities.map((sa: any) => sa.id);
+
+          // Update the store
+          reorderActivities(day, period, activityIds);
+        }
+        return;
+      }
+    }
+
+    // Handle regular drag and drop to time slots
+    if (!activeData?.activity) return;
+
+    const activity = activeData.activity as Activity;
 
     if (overData?.type === "timeSlot") {
       const { day, period } = overData;
@@ -280,6 +341,13 @@ export const WeekendView: React.FC = () => {
         period,
       };
 
+      // If dragging a scheduled activity, remove it from its current slot first
+      if (activeData.type === "scheduledActivity") {
+        const scheduledActivity = activeData.scheduledActivity;
+        handleActivityRemove(scheduledActivity.id);
+      }
+
+      // Add the activity to the new time slot
       handleActivityAdd(activity, timeSlot);
     }
   };
@@ -322,18 +390,18 @@ export const WeekendView: React.FC = () => {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-yellow-50 to-amber-50 dark:from-amber-900 dark:to-orange-900">
         {/* Modern Header */}
-        <header className="border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-gray-900/60 sticky top-0 z-50 shadow-sm">
+        <header className="border-b bg-amber-50/80 dark:bg-amber-900/80 backdrop-blur-xl supports-[backdrop-filter]:bg-amber-50/60 dark:supports-[backdrop-filter]:bg-amber-900/60 sticky top-0 z-50 shadow-sm">
           <div className="container mx-auto px-4 py-3 md:py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 md:gap-4">
                 <div className="flex items-center gap-2 md:gap-3">
-                  <div className="p-1.5 md:p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg md:rounded-xl">
+                  <div className="p-1.5 md:p-2 bg-gradient-to-br from-orange-500 to-amber-600 rounded-lg md:rounded-xl">
                     <Calendar className="w-5 h-5 md:w-6 md:h-6 text-white" />
                   </div>
                   <div>
-                    <span className="text-lg md:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    <span className="text-lg md:text-xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
                       Weekendly
                     </span>
                     <p className="text-xs text-muted-foreground hidden md:block">
