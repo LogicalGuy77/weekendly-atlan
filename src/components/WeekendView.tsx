@@ -418,9 +418,6 @@ export const WeekendView: React.FC = () => {
                     <Cloud className="w-4 h-4" />
                   </Button>
                 )}
-                <Button variant="outline" size="sm" className="p-2">
-                  <Settings className="w-4 h-4" />
-                </Button>
                 <ThemeToggle />
               </div>
             </div>
