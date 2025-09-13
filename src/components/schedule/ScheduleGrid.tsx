@@ -59,11 +59,11 @@ export const ScheduleGrid: React.FC<ScheduleGridProps> = ({
   };
 
   return (
-    <div className="space-y-8 p-2">
+    <div className="w-full max-w-full">
       {activeDay && (
         <div className="space-y-6">
-          {/* Enhanced grid with better spacing and responsive design */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
+          {/* Clean responsive grid with proper spacing */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 w-full">
             {TIME_PERIODS.map(
               ({ period, label: periodLabel, time, icon }, index) => {
                 const activities = getActivitiesForTimeSlot(activeDay, period);
@@ -71,7 +71,7 @@ export const ScheduleGrid: React.FC<ScheduleGridProps> = ({
                 return (
                   <motion.div
                     key={`${activeDay}-${period}`}
-                    className="relative"
+                    className="relative w-full min-w-0"
                     initial={{ opacity: 0, y: 40, scale: 0.9 }}
                     animate={{
                       opacity: 1,
@@ -91,13 +91,13 @@ export const ScheduleGrid: React.FC<ScheduleGridProps> = ({
                     }}
                     viewport={{ once: true, margin: "-50px" }}
                   >
-                    {/* Enhanced background with better positioning */}
-                    <div className="absolute inset-0 -m-2">
+                    {/* Clean background contained within card bounds */}
+                    <div className="absolute inset-0 rounded-3xl overflow-hidden">
                       <TimeAwareBackground timeOfDay={timeOfDay} />
                     </div>
 
-                    {/* Time slot with relative positioning for proper layering */}
-                    <div className="relative z-10">
+                    {/* Time slot with proper layering */}
+                    <div className="relative z-10 w-full">
                       <DroppableTimeSlot
                         day={activeDay}
                         period={period}

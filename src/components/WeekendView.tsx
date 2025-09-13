@@ -28,6 +28,8 @@ import { ScheduleGrid } from "@/components/schedule/ScheduleGrid";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { DragOverlay as CustomDragOverlay } from "@/components/dnd/DragOverlay";
 import { ActivityBrowser } from "@/components/activities/ActivityBrowser";
+import { MobileActivityBrowser } from "@/components/activities/MobileActivityBrowser";
+import { MobileWeatherBrowser } from "@/components/weather/MobileWeatherBrowser";
 import { TimeSlotSelector } from "@/components/ui/TimeSlotSelector";
 import { WeatherSidebar } from "@/components/WeatherSidebar";
 import { useActivityStore } from "@/stores/activityStore";
@@ -61,6 +63,10 @@ export const WeekendView: React.FC = () => {
   const [selectedActivityForMobile, setSelectedActivityForMobile] =
     useState<Activity | null>(null);
   const [showTimeSlotSelector, setShowTimeSlotSelector] = useState(false);
+  const [showMobileActivityBrowser, setShowMobileActivityBrowser] =
+    useState(false);
+  const [showMobileWeatherBrowser, setShowMobileWeatherBrowser] =
+    useState(false);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -322,14 +328,24 @@ export const WeekendView: React.FC = () => {
 
               <div className="flex items-center gap-2">
                 {isMobile && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsSidebarOpen(true)}
-                    className="p-2"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </Button>
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowMobileActivityBrowser(true)}
+                      className="p-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowMobileWeatherBrowser(true)}
+                      className="p-2"
+                    >
+                      <Cloud className="w-4 h-4" />
+                    </Button>
+                  </>
                 )}
                 <Button variant="outline" size="sm" className="hidden md:flex">
                   <Share className="w-4 h-4 mr-1" />
@@ -456,7 +472,7 @@ export const WeekendView: React.FC = () => {
           </Sidebar>
 
           <main
-            className={`flex-1 p-4 md:p-6 transition-all duration-300 ${
+            className={`flex-1 p-4 md:p-6 lg:p-8 transition-all duration-300 ${
               isSidebarOpen && !isMobile ? "container mx-auto" : "w-full"
             }`}
             style={{
@@ -553,6 +569,27 @@ export const WeekendView: React.FC = () => {
             onSelectTimeSlot={handleTimeSlotSelect}
           />
         )}
+
+        {/* Mobile Browsers */}
+        <MobileActivityBrowser
+          activities={activities}
+          categories={categories}
+          filters={filters}
+          searchTerm={searchTerm}
+          onFilterChange={setFilters}
+          onSearchChange={setSearchTerm}
+          onActivitySelect={(activity) => {
+            setShowMobileActivityBrowser(false);
+            handleMobileActivitySelect(activity);
+          }}
+          onClose={() => setShowMobileActivityBrowser(false)}
+          isOpen={showMobileActivityBrowser}
+        />
+
+        <MobileWeatherBrowser
+          isOpen={showMobileWeatherBrowser}
+          onClose={() => setShowMobileWeatherBrowser(false)}
+        />
       </div>
     </DndContext>
   );

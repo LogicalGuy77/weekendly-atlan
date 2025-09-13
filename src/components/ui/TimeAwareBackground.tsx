@@ -66,147 +66,15 @@ export const TimeAwareBackground: React.FC<{ timeOfDay: TimeOfDay }> = ({
 }) => {
   const currentVariant = enhancedBackgroundVariants[timeOfDay];
 
-  const renderIcons = () => {
-    switch (timeOfDay) {
-      case "morning":
-        return (
-          <>
-            <FloatingIcon className="top-1/4 left-1/4 w-12 h-12 text-yellow-300/30">
-              <Sunrise />
-            </FloatingIcon>
-            <FloatingIcon className="top-1/3 right-1/3 w-16 h-16 text-orange-200/25">
-              <Sun />
-            </FloatingIcon>
-            <FloatingIcon className="bottom-1/4 right-1/4 w-14 h-14 text-cyan-200/20">
-              <Cloud />
-            </FloatingIcon>
-          </>
-        );
-      case "afternoon":
-        return (
-          <>
-            <FloatingIcon className="top-1/5 left-1/3 w-20 h-20 text-yellow-200/30">
-              <Sun />
-            </FloatingIcon>
-            <FloatingIcon className="bottom-1/3 right-1/3 w-12 h-12 text-blue-200/25">
-              <Cloud />
-            </FloatingIcon>
-            <FloatingIcon className="top-2/3 left-1/4 w-10 h-10 text-sky-200/20">
-              <Cloud />
-            </FloatingIcon>
-          </>
-        );
-      case "evening":
-        return (
-          <>
-            <FloatingIcon className="top-1/4 right-1/4 w-14 h-14 text-orange-300/30">
-              <Sunset />
-            </FloatingIcon>
-            <FloatingIcon className="bottom-1/4 left-1/4 w-12 h-12 text-purple-200/25">
-              <Moon />
-            </FloatingIcon>
-            <FloatingIcon className="top-1/2 left-1/3 w-8 h-8 text-pink-200/20">
-              <Star />
-            </FloatingIcon>
-            <FloatingIcon className="bottom-1/3 right-1/5 w-6 h-6 text-violet-200/20">
-              <Star />
-            </FloatingIcon>
-          </>
-        );
-      case "night":
-        return (
-          <>
-            <FloatingIcon className="top-1/3 left-1/4 w-16 h-16 text-slate-200/25">
-              <Moon />
-            </FloatingIcon>
-            <FloatingIcon className="bottom-1/3 right-1/3 w-8 h-8 text-slate-300/20">
-              <Star />
-            </FloatingIcon>
-            <FloatingIcon className="top-3/4 right-1/4 w-6 h-6 text-slate-300/15">
-              <Star />
-            </FloatingIcon>
-            <FloatingIcon className="top-1/5 right-1/5 w-4 h-4 text-slate-300/15">
-              <Star />
-            </FloatingIcon>
-            <FloatingIcon className="bottom-1/5 left-1/3 w-5 h-5 text-slate-300/15">
-              <Star />
-            </FloatingIcon>
-          </>
-        );
-      default:
-        return null;
-    }
-  };
-
   return (
-    <div className="absolute inset-0 overflow-hidden rounded-2xl">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={`${timeOfDay}-primary`}
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{
-            opacity: 1,
-            scale: 1,
-            transition: { duration: 1.2, ease: "easeOut" },
-          }}
-          exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.8 } }}
-          className={`absolute inset-0 bg-gradient-to-br ${currentVariant.primary}`}
-        />
-        <motion.div
-          key={`${timeOfDay}-secondary`}
-          initial={{ opacity: 0, rotate: -5 }}
-          animate={{
-            opacity: 1,
-            rotate: 0,
-            transition: { duration: 1.5, delay: 0.3, ease: "easeOut" },
-          }}
-          exit={{ opacity: 0, rotate: 5, transition: { duration: 0.6 } }}
-          className={`absolute inset-0 bg-gradient-to-tl ${currentVariant.secondary} mix-blend-overlay`}
-        />
-        <motion.div
-          key={`${timeOfDay}-accent`}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{
-            opacity: 1,
-            scale: 1,
-            transition: { duration: 2, delay: 0.6, ease: "easeOut" },
-          }}
-          exit={{ opacity: 0, scale: 1.2, transition: { duration: 0.4 } }}
-          className={`absolute inset-0 bg-gradient-to-r ${currentVariant.accent} mix-blend-soft-light`}
-        />
-      </AnimatePresence>
-
-      {/* Subtle animated overlay for depth */}
-      <motion.div
-        className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/5"
-        animate={{
-          opacity: [0.3, 0.5, 0.3],
-        }}
-        transition={{
-          duration: 8,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
-
-      {/* Floating icons with enhanced animations */}
-      <motion.div
-        variants={iconVariants}
-        initial="initial"
-        animate="animate"
-        exit="exit"
-        className="relative z-10"
-      >
-        {renderIcons()}
-      </motion.div>
-
-      {/* Subtle noise texture overlay */}
+    <div className="absolute inset-0 overflow-hidden rounded-3xl">
+      {/* Single clean gradient background */}
       <div
-        className="absolute inset-0 opacity-[0.015] mix-blend-overlay pointer-events-none"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-        }}
+        className={`absolute inset-0 bg-gradient-to-br ${currentVariant.primary} opacity-60`}
       />
+
+      {/* Subtle overlay for depth */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/10" />
     </div>
   );
 };

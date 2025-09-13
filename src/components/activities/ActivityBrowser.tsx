@@ -257,8 +257,8 @@ export const ActivityBrowser: React.FC<ActivityBrowserProps> = ({
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto min-h-0 -mr-4 pr-4">
-        <div className="space-y-3 pb-20">
+      <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="space-y-3 pb-20 pr-2">
           {filteredActivities.map((activity) => (
             <DraggableActivity
               key={activity.id}
