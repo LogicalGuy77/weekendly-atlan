@@ -112,13 +112,13 @@ const SortableScheduledActivity: React.FC<DraggableScheduledActivityProps> = ({
                   ease: "easeInOut",
                 }}
               />
-              <h4 className="font-semibold truncate text-white drop-shadow-sm text-sm">
+              <h4 className="font-semibold text-foreground drop-shadow-sm text-sm leading-tight break-words">
                 {scheduledActivity.activity.title}
               </h4>
             </div>
 
-            <div className="flex items-center gap-3 text-xs text-white/90">
-              <div className="flex items-center gap-1.5 bg-white/10 rounded-full px-2 py-1 backdrop-blur-sm">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+              <div className="flex items-center gap-1.5 bg-background/20 dark:bg-white/10 rounded-full px-2 py-1 backdrop-blur-sm flex-shrink-0 border border-border/20">
                 <Clock className="w-3 h-3" />
                 <span className="font-medium">
                   {formatDuration(scheduledActivity.activity.duration)}
@@ -126,12 +126,13 @@ const SortableScheduledActivity: React.FC<DraggableScheduledActivityProps> = ({
               </div>
               <Badge
                 variant="outline"
-                className="text-xs whitespace-nowrap border-0 font-medium backdrop-blur-sm"
+                className="text-xs border-0 font-medium backdrop-blur-sm truncate max-w-[120px]"
                 style={{
                   backgroundColor: `${scheduledActivity.activity.category.color}25`,
                   color: scheduledActivity.activity.category.color,
                   textShadow: `0 0 8px ${scheduledActivity.activity.category.color}40`,
                 }}
+                title={scheduledActivity.activity.category.name}
               >
                 {scheduledActivity.activity.category.name}
               </Badge>
@@ -143,9 +144,9 @@ const SortableScheduledActivity: React.FC<DraggableScheduledActivityProps> = ({
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-8 w-8 p-0 text-white/60 hover:text-red-400 hover:bg-red-500/20 
+                className="h-8 w-8 p-0 text-muted-foreground/60 hover:text-red-400 hover:bg-red-500/20 
                          opacity-0 group-hover:opacity-100 transition-all duration-200 rounded-full
-                         backdrop-blur-sm border border-white/10 hover:border-red-400/30"
+                         backdrop-blur-sm border border-border/20 hover:border-red-400/30"
                 onClick={(e) => {
                   e.stopPropagation();
                   onActivityRemove?.(scheduledActivity.id);
@@ -154,8 +155,8 @@ const SortableScheduledActivity: React.FC<DraggableScheduledActivityProps> = ({
                 <X className="w-4 h-4" />
               </Button>
               <div
-                className="cursor-grab active:cursor-grabbing p-2 text-white/50 hover:text-white/80 
-                         transition-colors rounded-full hover:bg-white/10 backdrop-blur-sm"
+                className="cursor-grab active:cursor-grabbing p-2 text-muted-foreground/50 hover:text-foreground/80 
+                         transition-colors rounded-full hover:bg-background/10 dark:hover:bg-white/10 backdrop-blur-sm"
                 {...listeners}
                 {...attributes}
               >
@@ -251,7 +252,7 @@ export const DroppableTimeSlot: React.FC<DroppableTimeSlotProps> = ({
               >
                 {icon}
               </motion.span>
-              <h3 className="text-lg font-bold text-white drop-shadow-lg tracking-wide">
+              <h3 className="text-lg font-bold text-foreground drop-shadow-lg tracking-wide">
                 {label}
               </h3>
             </motion.div>
@@ -260,9 +261,9 @@ export const DroppableTimeSlot: React.FC<DroppableTimeSlotProps> = ({
               onClick={handleTimeEdit}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className={`text-sm font-medium text-white/90 transition-all duration-200 
-                px-3 py-1.5 rounded-full backdrop-blur-sm bg-white/10 border border-white/20
-                hover:bg-white/20 hover:border-white/30 hover:text-white drop-shadow-md
+              className={`text-sm font-medium text-foreground/90 transition-all duration-200 
+                px-3 py-1.5 rounded-full backdrop-blur-sm bg-background/20 dark:bg-white/10 border border-border/30 dark:border-white/20
+                hover:bg-background/30 dark:hover:bg-white/20 hover:border-border/50 dark:hover:border-white/30 hover:text-foreground drop-shadow-md
                 ${!readOnly ? "cursor-pointer" : "cursor-default"}`}
               disabled={readOnly}
             >
@@ -289,7 +290,7 @@ export const DroppableTimeSlot: React.FC<DroppableTimeSlotProps> = ({
               transition={{ duration: 1.5, repeat: isOver ? Infinity : 0 }}
             >
               <motion.div
-                className="p-4 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-4"
+                className="p-4 rounded-full bg-background/20 dark:bg-white/10 backdrop-blur-sm border border-border/30 dark:border-white/20 mb-4"
                 animate={{
                   y: [0, -8, 0],
                   rotate: [0, 5, -5, 0],
@@ -300,14 +301,14 @@ export const DroppableTimeSlot: React.FC<DroppableTimeSlotProps> = ({
                   ease: "easeInOut",
                 }}
               >
-                <Plus className="w-8 h-8 text-white/60" />
+                <Plus className="w-8 h-8 text-muted-foreground/60" />
               </motion.div>
-              <p className="text-sm font-medium text-white/80 mb-1">
+              <p className="text-sm font-medium text-muted-foreground/80 mb-1">
                 {readOnly ? "No activities scheduled" : "Drop an activity here"}
               </p>
               {isOver && !readOnly && (
                 <motion.p
-                  className="text-sm text-white font-semibold"
+                  className="text-sm text-foreground font-semibold"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}

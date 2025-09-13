@@ -171,7 +171,9 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
             </div>
             <div>
               <h3
-                className={`font-semibold ${compact ? "text-sm" : "text-base"}`}
+                className={`font-semibold ${
+                  compact ? "text-sm" : "text-base"
+                } leading-tight break-words`}
               >
                 {activity.title}
               </h3>

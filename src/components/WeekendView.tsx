@@ -460,8 +460,9 @@ export const WeekendView: React.FC = () => {
               isSidebarOpen && !isMobile ? "container mx-auto" : "w-full"
             }`}
             style={{
-              marginLeft: isSidebarOpen && !isMobile ? "420px" : "0",
-              marginRight: isWeatherSidebarOpen && !isMobile ? "420px" : "0",
+              marginLeft: isSidebarOpen && !isMobile ? "min(420px, 25vw)" : "0",
+              marginRight:
+                isWeatherSidebarOpen && !isMobile ? "min(420px, 25vw)" : "0",
             }}
           >
             {currentWeekend ? (
