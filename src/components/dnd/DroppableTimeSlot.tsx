@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDroppable, useDraggable } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -6,6 +6,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -261,14 +262,43 @@ export const DroppableTimeSlot: React.FC<DroppableTimeSlotProps> = ({
               items={activities.map((sa) => sa.id)}
               strategy={verticalListSortingStrategy}
             >
-              {activities.map((scheduledActivity) => (
-                <SortableScheduledActivity
-                  key={scheduledActivity.id}
-                  scheduledActivity={scheduledActivity}
-                  onActivityRemove={onActivityRemove}
-                  readOnly={readOnly}
-                />
-              ))}
+              <AnimatePresence mode="popLayout">
+                {activities.map((scheduledActivity, index) => (
+                  <motion.div
+                    key={scheduledActivity.id}
+                    layout
+                    initial={{ scale: 0.8, opacity: 0, y: -20 }}
+                    animate={{
+                      scale: 1,
+                      opacity: 1,
+                      y: 0,
+                      transition: {
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 30,
+                        mass: 1,
+                        delay: index * 0.1, // Stagger animation
+                      },
+                    }}
+                    exit={{
+                      scale: 0.8,
+                      opacity: 0,
+                      y: -20,
+                      transition: {
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 25,
+                      },
+                    }}
+                  >
+                    <SortableScheduledActivity
+                      scheduledActivity={scheduledActivity}
+                      onActivityRemove={onActivityRemove}
+                      readOnly={readOnly}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </SortableContext>
           )}
         </CardContent>

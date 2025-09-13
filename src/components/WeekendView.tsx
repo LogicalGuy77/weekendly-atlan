@@ -164,25 +164,14 @@ export const WeekendView: React.FC = () => {
 
   const handleTimeSlotSelect = (day: WeekendDay, period: TimePeriod) => {
     if (selectedActivityForMobile) {
+      const { preferences } = useUserStore.getState();
+      const timePeriodSettings = preferences.timePeriods[period];
+
       const timeSlot: TimeSlot = {
         id: `${day}-${period}`,
         day,
-        startTime:
-          period === "morning"
-            ? "08:00"
-            : period === "afternoon"
-            ? "12:00"
-            : period === "evening"
-            ? "17:00"
-            : "22:00",
-        endTime:
-          period === "morning"
-            ? "12:00"
-            : period === "afternoon"
-            ? "17:00"
-            : period === "evening"
-            ? "22:00"
-            : "24:00",
+        startTime: timePeriodSettings.start,
+        endTime: timePeriodSettings.end,
         period,
       };
 
@@ -277,7 +266,9 @@ export const WeekendView: React.FC = () => {
         const period = activeScheduledActivity.timeSlot.period;
 
         // Get all activities for this time slot
-        const dayActivities = currentWeekend[day];
+        const dayActivities = currentWeekend[
+          day as keyof typeof currentWeekend
+        ] as any[];
         const periodActivities = dayActivities.filter(
           (sa: any) => sa.timeSlot.period === period
         );
@@ -318,26 +309,17 @@ export const WeekendView: React.FC = () => {
     if (overData?.type === "timeSlot") {
       const { day, period } = overData;
 
-      // Create a time slot for this drop
+      // Get custom time periods from user preferences
+      const { preferences } = useUserStore.getState();
+      const timePeriodSettings =
+        preferences.timePeriods[period as keyof typeof preferences.timePeriods];
+
+      // Create a time slot for this drop using custom time periods
       const timeSlot: TimeSlot = {
         id: `${day}-${period}`,
         day,
-        startTime:
-          period === "morning"
-            ? "08:00"
-            : period === "afternoon"
-            ? "12:00"
-            : period === "evening"
-            ? "17:00"
-            : "22:00",
-        endTime:
-          period === "morning"
-            ? "12:00"
-            : period === "afternoon"
-            ? "17:00"
-            : period === "evening"
-            ? "22:00"
-            : "24:00",
+        startTime: timePeriodSettings.start,
+        endTime: timePeriodSettings.end,
         period,
       };
 
