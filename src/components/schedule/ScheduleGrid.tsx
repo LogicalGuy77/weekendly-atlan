@@ -4,24 +4,6 @@ import { DroppableTimeSlot } from "../dnd/DroppableTimeSlot";
 import { getTimePeriodInfo } from "../../lib/timeUtils";
 import { useUserStore } from "../../stores/userStore";
 import type { ScheduleGridProps, WeekendDay, TimePeriod } from "../../types";
-import { TimeAwareBackground } from "../ui/TimeAwareBackground";
-
-const getTimeOfDay = (
-  period: TimePeriod
-): "morning" | "afternoon" | "evening" | "night" => {
-  switch (period) {
-    case "morning":
-      return "morning";
-    case "afternoon":
-      return "afternoon";
-    case "evening":
-      return "evening";
-    case "night":
-      return "night";
-    default:
-      return "morning";
-  }
-};
 
 export const ScheduleGrid: React.FC<
   ScheduleGridProps & {
@@ -72,7 +54,6 @@ export const ScheduleGrid: React.FC<
             {TIME_PERIODS.map(
               ({ period, label: periodLabel, time, icon }, index) => {
                 const activities = getActivitiesForTimeSlot(activeDay, period);
-                const timeOfDay = getTimeOfDay(period);
                 return (
                   <motion.div
                     key={`${activeDay}-${period}`}
@@ -96,25 +77,17 @@ export const ScheduleGrid: React.FC<
                     }}
                     viewport={{ once: true, margin: "-50px" }}
                   >
-                    {/* Clean background contained within card bounds */}
-                    <div className="absolute inset-0 rounded-3xl overflow-hidden">
-                      <TimeAwareBackground timeOfDay={timeOfDay} />
-                    </div>
-
-                    {/* Time slot with proper layering */}
-                    <div className="relative z-10 w-full">
-                      <DroppableTimeSlot
-                        day={activeDay}
-                        period={period}
-                        label={periodLabel}
-                        time={time}
-                        icon={icon}
-                        activities={activities}
-                        onActivityRemove={onActivityRemove}
-                        onTimeEdit={onTimeEdit}
-                        readOnly={readOnly}
-                      />
-                    </div>
+                    <DroppableTimeSlot
+                      day={activeDay}
+                      period={period}
+                      label={periodLabel}
+                      time={time}
+                      icon={icon}
+                      activities={activities}
+                      onActivityRemove={onActivityRemove}
+                      onTimeEdit={onTimeEdit}
+                      readOnly={readOnly}
+                    />
                   </motion.div>
                 );
               }
