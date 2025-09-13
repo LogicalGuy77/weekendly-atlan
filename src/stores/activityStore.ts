@@ -1,5 +1,7 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
+import { usePersistenceStore } from "./persistenceStore";
+import { cacheActivitiesOffline } from "../lib/serviceWorker";
 import type {
   Activity,
   ActivityCategory,
@@ -56,10 +58,25 @@ export const useActivityStore = create<ActivityStore>()(
       loadActivities: async () => {
         set({ loading: true, error: null });
         try {
-          // TODO: Replace with actual API call
-          const mockActivities = await import("../data/mockActivities");
+          const persistenceStore = usePersistenceStore.getState();
+
+          // Try to load from IndexedDB first
+          let activities = await persistenceStore.loadActivities();
+
+          // If no activities in IndexedDB, load from mock data and save
+          if (activities.length === 0) {
+            const mockActivities = await import("../data/mockActivities");
+            activities = mockActivities.activities;
+
+            // Save to IndexedDB for future use
+            await persistenceStore.saveActivities(activities);
+
+            // Cache for offline use
+            await cacheActivitiesOffline(activities);
+          }
+
           set({
-            activities: mockActivities.activities,
+            activities,
             loading: false,
           });
         } catch (error) {
@@ -75,9 +92,21 @@ export const useActivityStore = create<ActivityStore>()(
 
       loadCategories: async () => {
         try {
-          // TODO: Replace with actual API call
-          const mockCategories = await import("../data/mockCategories");
-          set({ categories: mockCategories.categories });
+          const persistenceStore = usePersistenceStore.getState();
+
+          // Try to load from IndexedDB first
+          let categories = await persistenceStore.loadCategories();
+
+          // If no categories in IndexedDB, load from mock data and save
+          if (categories.length === 0) {
+            const mockCategories = await import("../data/mockCategories");
+            categories = mockCategories.categories;
+
+            // Save to IndexedDB for future use
+            await persistenceStore.saveCategories(categories);
+          }
+
+          set({ categories });
         } catch (error) {
           set({
             error:

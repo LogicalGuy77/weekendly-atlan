@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { formatTimeRange } from "../lib/timeUtils";
+import { usePersistenceStore } from "./persistenceStore";
 import type {
   Activity,
   TimeSlot,
@@ -16,6 +17,8 @@ interface ScheduleStoreActions {
   // Weekend management
   createNewWeekend: (title?: string) => void;
   loadWeekend: (weekendId: string) => Promise<void>;
+  loadMostRecentWeekend: () => Promise<void>;
+  initializeWeekends: () => Promise<void>;
   updateWeekendTitle: (title: string) => void;
 
   // Activity scheduling
@@ -115,23 +118,32 @@ export const useScheduleStore = create<ScheduleStore>()(
           conflicts: [],
           selectedTimeSlot: null,
         });
+
+        // Auto-save the new weekend
+        const persistenceStore = usePersistenceStore.getState();
+        persistenceStore.saveWeekend(newWeekend).catch(console.error);
       },
 
       loadWeekend: async (weekendId) => {
         set({ loading: true, error: null });
         try {
-          // TODO: Replace with actual API call
-          // For now, create a mock weekend
-          const mockWeekend = createEmptyWeekend("Loaded Weekend");
-          mockWeekend.id = weekendId;
+          const persistenceStore = usePersistenceStore.getState();
+          const weekend = await persistenceStore.loadWeekend(weekendId);
 
-          set({
-            currentWeekend: mockWeekend,
-            loading: false,
-          });
+          if (weekend) {
+            set({
+              currentWeekend: weekend,
+              loading: false,
+            });
 
-          // Detect conflicts after loading
-          get().detectConflicts();
+            // Detect conflicts after loading
+            get().detectConflicts();
+          } else {
+            set({
+              error: "Weekend not found",
+              loading: false,
+            });
+          }
         } catch (error) {
           set({
             error:
@@ -141,16 +153,57 @@ export const useScheduleStore = create<ScheduleStore>()(
         }
       },
 
+      loadMostRecentWeekend: async () => {
+        set({ loading: true, error: null });
+        try {
+          const persistenceStore = usePersistenceStore.getState();
+          const weekends = await persistenceStore.loadAllWeekends(1, 0); // Get most recent
+
+          if (weekends.length > 0) {
+            const mostRecent = weekends[0];
+            set({
+              currentWeekend: mostRecent,
+              loading: false,
+            });
+
+            // Detect conflicts after loading
+            get().detectConflicts();
+          } else {
+            // No weekends found, create a new one
+            get().createNewWeekend("My Weekend Plan");
+            set({ loading: false });
+          }
+        } catch (error) {
+          console.error("Failed to load most recent weekend:", error);
+          // Fallback to creating new weekend
+          get().createNewWeekend("My Weekend Plan");
+          set({ loading: false });
+        }
+      },
+
+      initializeWeekends: async () => {
+        const { currentWeekend } = get();
+
+        // Only initialize if we don't already have a weekend loaded
+        if (!currentWeekend) {
+          await get().loadMostRecentWeekend();
+        }
+      },
+
       updateWeekendTitle: (title) => {
         const { currentWeekend } = get();
         if (currentWeekend) {
-          set({
-            currentWeekend: {
-              ...currentWeekend,
-              title,
-              updatedAt: new Date(),
-            },
-          });
+          const updatedWeekend = {
+            ...currentWeekend,
+            title,
+            updatedAt: new Date(),
+          };
+
+          set({ currentWeekend: updatedWeekend });
+
+          // Auto-save the updated weekend
+          const persistenceStore = usePersistenceStore.getState();
+          persistenceStore.saveWeekend(updatedWeekend).catch(console.error);
         }
       },
 
@@ -173,6 +226,10 @@ export const useScheduleStore = create<ScheduleStore>()(
 
         set({ currentWeekend: updatedWeekend });
 
+        // Auto-save the updated weekend
+        const persistenceStore = usePersistenceStore.getState();
+        persistenceStore.saveWeekend(updatedWeekend).catch(console.error);
+
         // Detect conflicts after adding
         get().detectConflicts();
       },
@@ -191,6 +248,10 @@ export const useScheduleStore = create<ScheduleStore>()(
         };
 
         set({ currentWeekend: updatedWeekend });
+
+        // Auto-save the updated weekend
+        const persistenceStore = usePersistenceStore.getState();
+        persistenceStore.saveWeekend(updatedWeekend).catch(console.error);
 
         // Detect conflicts after removing
         get().detectConflicts();
@@ -241,6 +302,10 @@ export const useScheduleStore = create<ScheduleStore>()(
         };
 
         set({ currentWeekend: updatedWeekend });
+
+        // Auto-save the updated weekend
+        const persistenceStore = usePersistenceStore.getState();
+        persistenceStore.saveWeekend(updatedWeekend).catch(console.error);
 
         // Detect conflicts after moving
         get().detectConflicts();

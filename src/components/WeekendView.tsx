@@ -123,6 +123,7 @@ export const WeekendView: React.FC = () => {
     removeActivity,
     updateWeekendTitle,
     reorderActivities,
+    initializeWeekends,
   } = useScheduleStore();
 
   const { preferences, updateTimePeriod } = useUserStore();
@@ -130,10 +131,8 @@ export const WeekendView: React.FC = () => {
   useEffect(() => {
     loadActivities();
     loadCategories();
-    if (!currentWeekend) {
-      createNewWeekend("My Epic Weekend");
-    }
-  }, [loadActivities, loadCategories, createNewWeekend, currentWeekend]);
+    initializeWeekends(); // This will load existing weekends or create new one
+  }, [loadActivities, loadCategories, initializeWeekends]);
 
   useEffect(() => {
     if (currentWeekend && weekendTitle !== currentWeekend.title) {
