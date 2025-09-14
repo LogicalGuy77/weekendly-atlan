@@ -272,8 +272,6 @@ export const subscribeToPushNotifications =
       const registration = await navigator.serviceWorker.ready;
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        // Add your VAPID public key here when implementing push notifications
-        // applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
       });
 
       console.log("Push subscription created");

@@ -58,7 +58,7 @@ export const ScheduleSummary: React.FC<ScheduleSummaryProps> = ({
 
   // Calculate vibe score (0-100)
   const calculateVibeScore = () => {
-    let score = 50; // Base score
+    let score = 50;
 
     // Energy balance bonus
     const hasLow = energyLevels.low > 0;

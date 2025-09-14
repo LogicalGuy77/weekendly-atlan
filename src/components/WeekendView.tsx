@@ -132,7 +132,7 @@ export const WeekendView: React.FC = () => {
   useEffect(() => {
     loadActivities();
     loadCategories();
-    initializeWeekends(); // This will load existing weekends or create new one
+    initializeWeekends();
   }, [loadActivities, loadCategories, initializeWeekends]);
 
   useEffect(() => {
@@ -323,7 +323,6 @@ export const WeekendView: React.FC = () => {
     }
   };
 
-  // Loading and Error States
   if (activitiesLoading || scheduleLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-blue-950 dark:via-slate-900 dark:to-black">

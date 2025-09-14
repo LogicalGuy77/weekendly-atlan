@@ -42,7 +42,7 @@ export const DraggableActivity: React.FC<DraggableActivityProps> = ({
         type: "activity",
         activity,
       },
-      disabled: isMobile, // Disable drag on mobile to allow scrolling
+      disabled: isMobile,
     });
 
   const style = transform
@@ -51,7 +51,6 @@ export const DraggableActivity: React.FC<DraggableActivityProps> = ({
       }
     : undefined;
 
-  // Only apply drag listeners on desktop
   const dragProps = isMobile ? {} : { ...listeners, ...attributes };
 
   const handleMobileAdd = (e: React.MouseEvent) => {

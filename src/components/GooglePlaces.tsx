@@ -98,7 +98,7 @@ export const GooglePlaces: React.FC = () => {
         throw new Error("Google Places API key not found");
       }
 
-      // Use Google Places API (Web Service) - the correct endpoint for nearby search
+      // Use Google Places API (Web Service)
       const radius = 5000; // 5km radius
       const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${userLocation.latitude},${userLocation.longitude}&radius=${radius}&type=${category}&key=${apiKey}`;
 

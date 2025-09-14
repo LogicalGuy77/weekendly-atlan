@@ -24,7 +24,7 @@ export function formatTo12Hour(time24: string): string {
     minutes < 0 ||
     minutes > 59
   ) {
-    return time24; // Return original if invalid
+    return time24;
   }
 
   const period = hours >= 12 ? "PM" : "AM";
@@ -57,7 +57,7 @@ export function formatTo24Hour(time12: string): string {
   const match = time12.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
 
   if (!match) {
-    return time12; // Return original if invalid format
+    return time12;
   }
 
   let [, hoursStr, minutesStr, period] = match;

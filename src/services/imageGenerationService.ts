@@ -278,7 +278,6 @@ class ImageGenerationService {
     try {
       const finalFilename = filename || `weekendly-schedule-${Date.now()}.png`;
 
-      // In browser environment, create download link
       if (typeof window !== "undefined") {
         const byteCharacters = atob(imageData);
         const byteNumbers = new Array(byteCharacters.length);
@@ -300,7 +299,6 @@ class ImageGenerationService {
         return finalFilename;
       }
 
-      // Node.js environment (for testing)
       const fs = await import("fs");
       const buffer = Buffer.from(imageData, "base64");
       fs.writeFileSync(finalFilename, buffer);
